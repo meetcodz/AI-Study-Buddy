@@ -1,120 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyFlow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-    .top-nav{
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    display: flex;
-     gap: 20px;
-    }
-    .nav{
-        display : flex;
-        gap: 25px;
-        align-items: center;
-    }header{
-        backdrop-filter: blur(7px);
-        background: rgba(10,12,18,0.01);
-     position: fixed;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 60px;
-     box-sizing: border-box;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyFlow</title>
 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
-    padding: 0 30px;
-    border-bottom: 1px solid #1A2535;
+<style>
+body{
+  margin:0;
+  font-family:'Outfit',sans-serif;
+  background:#0A0C12;
+  color:#F0F2F5;
+  padding-top:70px;
+}
 
-    z-index: 1000; 
-    }
-    .nav div{
-     cursor: pointer;
-     font-size: 14px;
-     padding: 6px 12px;
-    border-radius: 8px;
-     transition:all 0.3s ease ;
-    }
+/* HEADER */
+header{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:60px;
+  box-sizing:border-box;
 
-    .nav div:hover{
-    color:#3B82F6;
-    }
-    body{
-      margin:0;
-      font-family:'Outfit',sans-serif;
-      background:#0A0C12;
-      color:#F0F2F5;
-    }
-    section{
-      padding:60px;
-      border-bottom:1px solid #1A2535;
-      transition:all 0.3s ease;
-      margin:20 px;
-    }
-    .logo
-    {
-        font-size:18px;
-        font-weight=600;
-    }
-    section:hover
-    {
-        transform: scale(1.02);
-        background:rgba(59, 121, 246, 0.05);
-        box-shadow:0 0 20px rgba(59, 212, 246, 0.2);
-        border-top:1px solid #3B82F6;
-        border-bottom:1px solid #3B82F6;
-    }
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 
-    h1,h2{
-      margin-bottom:10px;
-    }
+  padding:0 30px;
+  backdrop-filter:blur(8px);
+  background:rgba(10,12,18,0.7);
+  border-bottom:1px solid #1A2535;
 
-    p{
-      color:#4B5563;
-    }
-    .blue{color:#3B82F6;}
-    .green{color:#14B8A6;}
-    .yellow{color:#F59E0B;}
-    </style>
+  z-index:1000;
+}
+
+.logo{
+  font-size:18px;
+  font-weight:600;
+  color:#3B82F6;
+}
+
+.nav{
+  display:flex;
+  gap:25px;
+}
+
+.nav div{
+  cursor:pointer;
+  padding:6px 12px;
+  border-radius:8px;
+  transition:0.3s;
+}
+
+.nav div:hover{
+  background:rgba(59,130,246,0.15);
+  box-shadow:0 0 10px rgba(59,130,246,0.4);
+  color:#3B82F6;
+}
+
+/* HERO */
+.hero{
+  height:50vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+
+.hero h1{
+  font-size:60px;
+  margin:0;
+}
+
+.hero p{
+  color:#4B5563;
+}
+
+/* SECTION */
+.section{
+  max-width:1100px;
+  margin:auto;
+  padding:40px 20px;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+/* CARD */
+.card{
+  background:#0F1520;
+  border:1px solid #1A2535;
+  border-radius:20px;
+  padding:25px;
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:scale(1.03);
+  border-color:#3B82F6;
+  box-shadow:0 10px 30px rgba(59,130,246,0.15);
+}
+
+/* TEXT */
+h2{
+  margin-bottom:20px;
+}
+
+.card h3{
+  font-size:14px;
+  color:#4B5563;
+  margin-bottom:10px;
+}
+
+/* PROGRESS */
+.progress{
+  height:6px;
+  background:#1A2535;
+  border-radius:3px;
+  margin-top:10px;
+}
+
+.fill{
+  width:35%;
+  height:100%;
+  background:#3B82F6;
+}
+
+/* HEATMAP */
+.heatmap{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:4px;
+}
+
+.box{
+  height:12px;
+  background:#1A2535;
+}
+
+.box.active{
+  background:#14B8A6;
+}
+
+/* CHART */
+.chart{
+  height:180px;
+  border:2px dashed #1A2535;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#4B5563;
+  border-radius:12px;
+}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
-<body>
-    <header>
-  <div class="logo blue">StudyFlow</div>
 
+<body>
+
+<header>
+  <div class="logo">StudyFlow</div>
   <div class="nav">
     <div>Home</div>
     <div>Questions</div>
     <div>Quiz</div>
     <div>Profile</div>
-   </div>
- </header>
-    
-    <section>
-        <h1 class="blue">Dashboard</h1>
-        <p>Basic UI for dashboard will be added here</p>
-    </section>
+  </div>
+</header>
 
-    <section>
-        <h1 class="blue">Daily Goal</h1>
-        <p> Daily Goals based on Question will be put here</p>
-    </section>
+<div class="hero">
+  <h1>25:00</h1>
+  <p>Focus Session (Pomodoro)</p>
+</div>
 
-    <section>
-        <h1 class="blue">Timer Pomodoro</h1>
-        <p>Pomodoro Based Student Timer</p>
-    </section>
+<div class="section">
+  <h2>Study Tracker</h2>
 
-    <section>
-        <h1 class="blue">Heatmap</h1>
-        <p> Heatmap of the user will be shown</p>
-    </section>
+  <div class="grid">
+    <div class="card">
+      <h3>Daily Goal</h3>
+      <h2>7 / 20 Completed</h2>
+      <div class="progress">
+        <div class="fill"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Study Timer</h3>
+      <h2>25:00</h2>
+      <p style="color:#4B5563">Focus Mode</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Activity</h2>
+
+  <div class="card">
+    <h3>Heatmap</h3>
+    <div class="heatmap">
+      <div class="box active"></div>
+      <div class="box"></div>
+      <div class="box active"></div>
+      <div class="box"></div>
+      <div class="box active"></div>
+      <div class="box"></div>
+      <div class="box active"></div>
+      <div class="box"></div>
+      <div class="box"></div>
+      <div class="box active"></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Performance</h2>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Accuracy Trend</h3>
+      <div class="chart">Chart.js coming soon</div>
+    </div>
+
+    <div class="card">
+      <h3>Topic Intelligence</h3>
+      <div class="chart">Spider Graph coming soon</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
