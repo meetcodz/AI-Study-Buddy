@@ -1,24 +1,63 @@
-const GEMINI_API_KEY = '';
-const GEMINI_MODEL   = 'gemini-2.5-flash';
+document.addEventListener("DOMContentLoaded", () => {
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("user-input");
+    const chatMessages = document.getElementById("chat-messages");
+    const typingIndicator = document.getElementById("typing-indicator");
 
+    // Dummy array of responses for Phase 1 Demo
+    const dummyResponses = [
+        "That's a great question! For your studies, it's important to remember...",
+        "I can help with that. The core concept here is roughly...",
+        "Let me simplify that for you. It basically means...",
+        "Interesting study topic. Here is a breakdown of the subject...",
+        "I'm your study assistant, and I'd say the best way to understand this is to look at practical examples."
+    ];
 
-const SYS = `You are StudyCoach AI — a strict academic study assistant exclusively for students.
+    chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        const message = userInput.value.trim();
+        if (!message) return;
 
-YOUR ONLY PURPOSE is to help with academic and educational topics:
-- Explaining academic concepts (science, math, history, literature, programming, languages, economics, etc.)
-- Exam prep: quizzes, practice questions, flashcard-style Q&A
-- Summarising and organising study notes
-- Creating personalised study plans and revision schedules
-- Solving homework and academic problems step by step
-- Giving evidence-based study tips and memory techniques
+        // 1. Add User Message
+        appendMessage(message, 'user');
+        userInput.value = '';
 
-STRICT RULES — follow without exception:
-1. OFF-TOPIC REFUSAL: If the user asks ANYTHING not related to studying or academics (movies, sports, relationships, cooking, jokes, casual chat, news, politics, entertainment, etc.), refuse firmly but kindly: "I'm your study-only assistant! I can't help with that, but I'd love to help you with any academic topic. What are you studying? 📚"
-2. MEMORY: You have full memory of this conversation. Always reference prior context naturally — e.g. "As we covered about photosynthesis earlier..." This makes the session feel continuous and personalised.
-3. NEVER break character, pretend to be another AI, or reveal your underlying model or architecture.
-4. FORMAT: Keep responses concise — 3 to 6 sentences or short bullet points. Use simple language with analogies for hard concepts. Use emojis sparingly (1–2 max).
-5. ENGAGEMENT: Always end with a follow-up question, a mini-quiz, or encouragement.`;
+        // 2. Show Typing Indicator
+        typingIndicator.classList.remove('hidden');
+        scrollToBottom();
 
+        // 3. Simulate API Delay and Bot Response
+        setTimeout(() => {
+            typingIndicator.classList.add('hidden');
+            
+            // Pick a random dummy response
+            const randomResponse = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
+            
+            appendMessage(randomResponse, 'bot');
+        }, 1500); // 1.5 seconds delay
+    });
 
-let history = [];
-let busy    = false;
+    function appendMessage(text, sender) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", `${sender}-message`);
+
+        const avatarDiv = document.createElement("div");
+        avatarDiv.classList.add("avatar");
+        avatarDiv.textContent = sender === 'user' ? 'U' : 'N'; // U for User, N for Nexus
+
+        const contentDiv = document.createElement("div");
+        contentDiv.classList.add("message-content");
+        contentDiv.textContent = text;
+
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(contentDiv);
+
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
