@@ -30,6 +30,9 @@
     </style>
 </head>
 <body>
-    
+    <section>
+        <h1 class="blue">Dashboard</h1>
+        <p>Basic UI for dashboard will be added here</p>
+    </section>
 </body>
 </html>
