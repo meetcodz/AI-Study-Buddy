@@ -1,63 +1,136 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const chatForm = document.getElementById("chat-form");
-    const userInput = document.getElementById("user-input");
-    const chatMessages = document.getElementById("chat-messages");
-    const typingIndicator = document.getElementById("typing-indicator");
+ const GEMINI_MODEL = 'gemini-2.5-flash';
 
-    // Dummy array of responses for Phase 1 Demo
-    const dummyResponses = [
-        "That's a great question! For your studies, it's important to remember...",
-        "I can help with that. The core concept here is roughly...",
-        "Let me simplify that for you. It basically means...",
-        "Interesting study topic. Here is a breakdown of the subject...",
-        "I'm your study assistant, and I'd say the best way to understand this is to look at practical examples."
-    ];
+        const SYS = `You are StudyCoach AI — a strict academic study assistant exclusively for students.
 
-    chatForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        
-        const message = userInput.value.trim();
-        if (!message) return;
+YOUR ONLY PURPOSE is to help with academic and educational topics:
+- Explaining academic concepts
+- Exam prep
+- Summarising notes
+- Creating study plans
+- Solving problems step by step
 
-        // 1. Add User Message
-        appendMessage(message, 'user');
-        userInput.value = '';
+STRICT RULES:
+Stay academic. Be concise. End with a follow-up.`;
 
-        // 2. Show Typing Indicator
-        typingIndicator.classList.remove('hidden');
-        scrollToBottom();
 
-        // 3. Simulate API Delay and Bot Response
-        setTimeout(() => {
-            typingIndicator.classList.add('hidden');
-            
-            // Pick a random dummy response
-            const randomResponse = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
-            
-            appendMessage(randomResponse, 'bot');
-        }, 1500); // 1.5 seconds delay
-    });
+        let history = [];
+        let busy = false;
+        let controller = null;
 
-    function appendMessage(text, sender) {
-        const messageDiv = document.createElement("div");
-        messageDiv.classList.add("message", `${sender}-message`);
+        const now = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        const avatarDiv = document.createElement("div");
-        avatarDiv.classList.add("avatar");
-        avatarDiv.textContent = sender === 'user' ? 'U' : 'N'; // U for User, N for Nexus
+        function resize(el) {
+            el.style.height = '22px';
+            el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+        }
 
-        const contentDiv = document.createElement("div");
-        contentDiv.classList.add("message-content");
-        contentDiv.textContent = text;
+        function handleKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send();
+            }
+        }
 
-        messageDiv.appendChild(avatarDiv);
-        messageDiv.appendChild(contentDiv);
+        function addMsg(role, text) {
+            const C = document.getElementById('msgs');
 
-        chatMessages.appendChild(messageDiv);
-        scrollToBottom();
-    }
+            const g = document.createElement('div');
+            g.className = 'msg-group';
 
-    function scrollToBottom() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-});
+            const row = document.createElement('div');
+            row.className = `msg-row ${role}`;
+
+            const av = document.createElement('div');
+            av.className = 'm-avatar';
+            av.textContent = role === 'ai' ? '🎓' : '🧑';
+
+            const b = document.createElement('div');
+            b.className = 'bubble';
+
+            if (role === 'ai') {
+                b.innerHTML = `<div class="ai-label">✦ StudyCoach</div><div class="content-text">${text || ''}</div>
+                <div class="msg-actions">
+                    <button class="action-btn" onclick="copyText(this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span>Copy</span>
+                    </button>
+                    <button class="action-btn" onclick="openFS(this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                        <span>Full Screen</span>
+                    </button>
+                </div>`;
+            } else {
+                const t = document.createTextNode(text);
+                const ts = document.createElement('span');
+                ts.className = 'b-time';
+                ts.textContent = now();
+                b.appendChild(t);
+                b.appendChild(ts);
+            }
+
+            row.appendChild(av);
+            row.appendChild(b);
+            g.appendChild(row);
+            C.appendChild(g);
+
+            C.scrollTop = C.scrollHeight;
+
+            return b;
+        }
+
+        function showTyping() {
+            const C = document.getElementById('msgs');
+
+            const g = document.createElement('div');
+            g.className = 'typing-group';
+            g.id = 'typingEl';
+
+            const av = document.createElement('div');
+            av.className = 'm-avatar';
+            av.style.cssText = 'background:linear-gradient(135deg,#4f7cff,#8b5cf6)';
+            av.textContent = '🎓';
+
+            const b = document.createElement('div');
+            b.className = 't-bubble';
+            b.innerHTML = '<span></span><span></span><span></span>';
+
+            g.appendChild(av);
+            g.appendChild(b);
+            C.appendChild(g);
+
+            C.scrollTop = C.scrollHeight;
+        }
+
+        function hideTyping() {
+            document.getElementById('typingEl')?.remove();
+        }
+
+        async function typeText(el, text) {
+            el.innerHTML = `<div class="ai-label">✦ StudyCoach</div><div class="content-text"></div>`;
+            const wrapper = el.querySelector('.content-text');
+            let i = 0;
+
+            while (i < text.length) {
+                if (controller?.signal.aborted) {
+                    wrapper.innerHTML += "... [Stopped]";
+                    break;
+                }
+                wrapper.innerHTML += text[i];
+                i++;
+                document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+                await new Promise(r => setTimeout(r, 10 + Math.random() * 20));
+            }
+
+            el.innerHTML += `
+                <div class="msg-actions">
+                    <button class="action-btn" onclick="copyText(this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span>Copy</span>
+                    </button>
+                    <button class="action-btn" onclick="openFS(this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                        <span>Full Screen</span>
+                    </button>
+                </div>
+                <span class="b-time">${now()}</span>`;
+        }
