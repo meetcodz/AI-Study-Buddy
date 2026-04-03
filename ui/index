@@ -402,12 +402,12 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
         <div style="position:relative;width:74px;height:74px;flex-shrink:0">
           <svg width="74" height="74" style="transform:rotate(-90deg);display:block">
             <circle cx="37" cy="37" r="30" fill="none" stroke="#131B28" stroke-width="7"/>
-            <circle id="g-arc" cx="37" cy="37" r="30" fill="none" stroke="#3B82F6" stroke-width="7"
+            <circle id="g-arc" cx="37" cy="37" r="30" fill="none" stroke="#14B8A6" stroke-width="7"
               stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke-linecap="round"
               style="transition:stroke-dashoffset .7s cubic-bezier(.4,0,.2,1),stroke .3s"/>
           </svg>
           <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-            <span class="mono" id="g-pct" style="font-size:14px;font-weight:500;color:#3B82F6;line-height:1">0%</span>
+            <span class="mono" id="g-pct" style="font-size:14px;font-weight:500;color:#14B8A6;line-height:1">0%</span>
             <span style="font-size:9px;color:#4B5563;margin-top:2px">done</span>
           </div>
         </div>
@@ -418,13 +418,13 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
         <div class="counter-row">
           <button class="cnt-btn" id="g-minus" style="background:#131B28;color:#4B5563;border:1px solid #1A2535;border-right:none;border-radius:8px 0 0 8px">−</button>
           <div class="cnt-disp mono" id="g-done">7</div>
-          <button class="cnt-btn" id="g-plus" style="background:rgba(59,130,246,0.1);color:#3B82F6;border:1px solid rgba(59,130,246,0.25);border-left:none;border-radius:0 8px 8px 0">+</button>
+          <button class="cnt-btn" id="g-plus" style="background:rgba(20,184,166,0.1);color:#14B8A6;border:1px solid rgba(20,184,166,0.25);border-left:none;border-radius:0 8px 8px 0">+</button>
         </div>
       </div>
 
       <div style="display:flex;justify-content:space-between;margin-bottom:7px">
         <span style="font-size:11px;color:#4B5563" id="g-bar-lbl">7 of 20 completed</span>
-        <span class="mono" style="font-size:11px;color:#3B82F6" id="g-bar-frac">7 / 20</span>
+        <span class="mono" style="font-size:11px;color:#14B8A6" id="g-bar-frac">7 / 20</span>
       </div>
       <div class="prog-wrap">
         <div class="prog-bar" id="g-bar" style="width:35%"></div>
@@ -441,8 +441,8 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
         </div>
         <div id="g-edit-form" style="display:none;align-items:center;gap:7px">
           <input class="mono" id="g-inp" type="number" min="1" max="200" value="20"
-            style="width:58px;height:32px;background:#070B11;border:1px solid #3B82F6;border-radius:7px;padding:0 8px;color:#F0F2F5;font-size:14px;outline:none;text-align:center"/>
-          <button class="goal-act-btn" id="g-save" style="background:#3B82F6;color:#fff;border-color:#3B82F6">Save</button>
+            style="width:58px;height:32px;background:#070B11;border:1px solid #14B8A6;border-radius:7px;padding:0 8px;color:#F0F2F5;font-size:14px;outline:none;text-align:center"/>
+          <button class="goal-act-btn" id="g-save" style="background:#14B8A6;color:#0A0C12;border-color:#14B8A6">Save</button>
           <button class="goal-act-btn" id="g-cancel" style="background:#131B28;color:#4B5563;border-color:#1A2535">✕</button>
         </div>
       </div>
@@ -454,7 +454,7 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
       <div class="streak-row">
         <div class="streak-box">
           <div style="font-size:9px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px">Streak</div>
-          <div class="mono" style="font-size:22px;font-weight:500;color:#F59E0B">12 <span style="font-size:11px;color:#4B5563;font-family:'Outfit',sans-serif">days 🔥</span></div>
+          <div class="mono" style="font-size:22px;font-weight:500;color:#F59E0B">12 <span style="font-size:11px;color:#4B5563;font-family:'Outfit',sans-serif">days</span></div>
         </div>
         <div class="streak-box">
           <div style="font-size:9px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px">Best</div>
@@ -462,7 +462,7 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
         </div>
         <div class="streak-box">
           <div style="font-size:9px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px">Total</div>
-          <div class="mono" style="font-size:22px;font-weight:500;color:#3B82F6">1847</div>
+          <div class="mono" style="font-size:22px;font-weight:500;color:#14B8A6">1847</div>
         </div>
       </div>
     </div>
@@ -489,8 +489,8 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
               style="transition:stroke-dashoffset 1s linear,stroke .4s"/>
           </svg>
           <div id="t-glow" style="position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle,rgba(20,184,166,0.07),transparent 65%);pointer-events:none;transition:background .5s"></div>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2">
-            <div class="mono" id="t-disp" style="font-size:46px;font-weight:300;color:#F0F2F5;letter-spacing:.02em;line-height:1">25:00</div>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-align:center;">
+            <div class="mono" id="t-disp" style="font-size:46px;font-weight:300;color:#F0F2F5;line-height:1;width:100%;text-align:center;">25:00</div>
             <div id="t-lbl" style="font-size:11px;color:#4B5563;margin-top:6px;font-weight:600;letter-spacing:.12em;text-transform:uppercase">Focus</div>
             <div id="t-status" style="margin-top:5px;height:16px;display:flex;align-items:center">
               <span id="t-running" style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#14B8A6;opacity:0;transition:opacity .4s">
@@ -596,8 +596,8 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
       </div>
       <div class="chart-stats" id="acc-stats">
         <div class="cstat">Current <span class="cstat-val" id="acc-curr">--</span></div>
-        <div class="cstat">Best <span class="cstat-val" id="acc-best" style="color:#3B82F6">--</span></div>
-        <div class="cstat">Average <span class="cstat-val" id="acc-avg" style="color:#8B5CF6">--</span></div>
+        <div class="cstat">Best <span class="cstat-val" id="acc-best">--</span></div>
+        <div class="cstat">Average <span class="cstat-val" id="acc-avg">--</span></div>
       </div>
     </div>
 
@@ -608,6 +608,7 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
         <button class="cf-btn on" data-s="math">Math</button>
         <button class="cf-btn" data-s="physics">Physics</button>
         <button class="cf-btn" data-s="chem">Chemistry</button>
+        <select class="cf-sel" id="sp-topic-sel"></select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
         <div style="position:relative;height:200px">
@@ -651,9 +652,27 @@ const MOCK = {
     chem:    { Organic:[60,62,65,68,70,73,75], Physical:[50,52,54,56,58,60,62], Inorganic:[40,42,44,46,48,50,52] },
   },
   spider: {
-    math:    { labels:['Probability','Algebra','Calculus','Matrices','Vectors'], data:[38,81,65,55,72] },
-    physics: { labels:['Kinematics','Thermodynamics','Optics','Current','Modern'], data:[62,44,58,49,70] },
-    chem:    { labels:['Organic','Inorganic','Physical','Bonding','Equilibrium'], data:[75,52,60,47,68] },
+    math: {
+      Algebra:     { labels:['Linear Eq','Quadratic','Polynomials','Functions','Sequences'], data:[75,68,55,80,62] },
+      Probability: { labels:['Basic','Conditional','Distributions','Bayes','Expectation'],  data:[45,35,30,40,38] },
+      Calculus:    { labels:['Limits','Derivatives','Integrals','Diff Eq','Applications'],  data:[60,70,55,45,65] },
+      Matrices:    { labels:['Operations','Determinant','Inverse','Eigen','Transform'],      data:[55,48,60,35,50] },
+      Vectors:     { labels:['Dot Product','Cross Product','Projection','3D Coords','Angles'],data:[72,65,58,70,68] },
+    },
+    physics: {
+      Kinematics:     { labels:['Motion 1D','Motion 2D','Projectile','Relative','Circular'],    data:[65,58,62,50,55] },
+      Thermodynamics: { labels:['Laws','Heat','Work','Entropy','Cycles'],                         data:[40,35,45,30,42] },
+      Optics:         { labels:['Reflection','Refraction','Lenses','Diffraction','Wave'],        data:[60,55,58,45,52] },
+      Current:        { labels:['Ohm Law','Circuits','Kirchhoff','Capacitors','Inductors'],      data:[55,50,48,40,45] },
+      Modern:         { labels:['Photoelectric','Bohr Model','Nuclear','Radioactivity','Quanta'],data:[70,65,60,55,68] },
+    },
+    chem: {
+      Organic:     { labels:['Alkanes','Alkenes','Alkynes','Alcohols','Reactions'],  data:[78,72,65,80,70] },
+      Inorganic:   { labels:['Periodic','Bonding','Acids','Metals','Coordination'],  data:[55,50,60,48,45] },
+      Physical:    { labels:['Mole Concept','Kinetics','Equilibrium','Thermo','Electro'],data:[62,58,55,50,60] },
+      Bonding:     { labels:['Ionic','Covalent','Metallic','Hybridization','VSEPR'], data:[48,55,42,40,45] },
+      Equilibrium: { labels:['Le Chatelier','Kp Kc','pH','Buffer','Solubility'],    data:[65,62,70,58,68] },
+    },
   },
 };
 
@@ -731,8 +750,8 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   function render(){
     const pct=goal>0?Math.min(done/goal,1):0;
     const met=done>=goal;
-    const col=met?'#F59E0B':'#3B82F6';
-    const grad=met?'linear-gradient(90deg,#92400e,#F59E0B)':'linear-gradient(90deg,#1d4ed8,#3B82F6)';
+    const col=met?'#F59E0B':'#14B8A6';
+    const grad=met?'linear-gradient(90deg,#92400e,#F59E0B)':'linear-gradient(90deg,#0d9488,#14B8A6)';
     $('g-arc').setAttribute('stroke-dashoffset',CIRC*(1-pct));
     $('g-arc').setAttribute('stroke',col);
     $('g-pct').textContent=Math.round(pct*100)+'%'; $('g-pct').style.color=col;
@@ -744,8 +763,8 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     $('g-bar-lbl').textContent=`${done} of ${goal} completed`;
     $('g-bar-frac').textContent=`${done} / ${goal}`; $('g-bar-frac').style.color=col;
     $('g-goal-disp').textContent=goal;
-    $('g-plus').style.background=met?'rgba(245,158,11,0.1)':'rgba(59,130,246,0.1)';
-    $('g-plus').style.color=col; $('g-plus').style.borderColor=met?'rgba(245,158,11,0.25)':'rgba(59,130,246,0.25)';
+    $('g-plus').style.background=met?'rgba(245,158,11,0.1)':'rgba(20,184,166,0.1)';
+    $('g-plus').style.color=col; $('g-plus').style.borderColor=met?'rgba(245,158,11,0.25)':'rgba(20,184,166,0.25)';
   }
 
   $('g-minus').onclick=()=>{if(done>0){done--;render();}};
@@ -761,11 +780,11 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   D.week.forEach((v,i)=>{
     const isTd=i===todayIdx, h=Math.max(4,Math.round((v/maxW)*36));
     const bar=document.createElement('div');
-    bar.style.cssText=`flex:1;border-radius:3px 3px 0 0;height:${h}px;background:${isTd?'#3B82F6':v>0?'rgba(59,130,246,0.28)':'#131B28'};cursor:default;transition:background .15s`;
+    bar.style.cssText=`flex:1;border-radius:3px 3px 0 0;height:${h}px;background:${isTd?'#14B8A6':v>0?'rgba(20,184,166,0.28)':'#131B28'};cursor:default;transition:background .15s`;
     bar.title=`${D.week_labels[i]}: ${v} questions`;
     $('g-week').appendChild(bar);
     const lbl=document.createElement('div');
-    lbl.style.cssText=`flex:1;text-align:center;font-size:9px;color:${isTd?'#3B82F6':'#2E3648'};font-weight:${isTd?700:400}`;
+    lbl.style.cssText=`flex:1;text-align:center;font-size:9px;color:${isTd?'#14B8A6':'#2E3648'};font-weight:${isTd?700:400}`;
     lbl.textContent=D.week_labels[i]; $('g-week-lbl').appendChild(lbl);
   });
   render();
@@ -856,7 +875,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     const vals=Object.values(data);
     const total=vals.reduce((a,b)=>a+b,0), active=vals.filter(v=>v>0).length, best=Math.max(...vals);
     let lg=0,cur=0; Object.keys(data).sort().forEach(k=>{if(data[k]>0){cur++;lg=Math.max(lg,cur);}else cur=0;});
-    const items=[{l:'Total questions',v:total,c:'#14B8A6'},{l:'Active days',v:active,c:'#3B82F6'},{l:'Longest streak',v:`${lg} days`,c:'#F59E0B'},{l:'Best single day',v:`${best} Qs`,c:'#8B5CF6'}];
+    const items=[{l:'Total questions',v:total,c:'#3B82F6'},{l:'Active days',v:active,c:'#3B82F6'},{l:'Longest streak',v:`${lg} days`,c:'#3B82F6'},{l:'Best single day',v:`${best} Qs`,c:'#3B82F6'}];
     $('hm-stats').innerHTML=items.map(({l,v,c})=>`<div style="background:#131B28;border:1px solid #1A2535;border-radius:12px;padding:14px 16px;border-top:2px solid ${c}"><div style="font-size:10px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">${l}</div><div class="mono" style="font-size:20px;font-weight:500;color:${c}">${typeof v==='number'?v.toLocaleString():v}</div></div>`).join('');
   }
 
@@ -974,10 +993,11 @@ let accChart, accSubj='math';
 })();
 
 
-let spChart, spSubj='math';
+let spChart, spSubj='math', spTopic='Algebra';
 (function(){
   const ctx=$('sp-chart').getContext('2d');
-  const d=MOCK.spider[spSubj];
+  const firstTopic=Object.keys(MOCK.spider['math'])[0];
+  const d=MOCK.spider['math'][firstTopic];
   spChart=new Chart(ctx,{
     type:'radar',
     data:{
@@ -993,13 +1013,22 @@ let spChart, spSubj='math';
         grid:{color:'rgba(255,255,255,0.06)'},
         pointLabels:{color:'#6B7280',font:{family:'Outfit',size:10}},
         ticks:{display:false,backdropColor:'transparent'},
-        suggestedMin:0,suggestedMax:100,
+        min:0,max:100,
       }}
     }
   });
 
+  function populateTopics(){
+    const sel=$('sp-topic-sel'); sel.innerHTML='';
+    Object.keys(MOCK.spider[spSubj]).forEach(t=>{
+      const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o);
+    });
+    spTopic=sel.value;
+  }
+
   function updateSpider(){
-    const db=MOCK.spider[spSubj];
+    const db=MOCK.spider[spSubj][spTopic];
+    if(!db)return;
     spChart.data.labels=db.labels; spChart.data.datasets[0].data=db.data; spChart.update();
     let weak='',strong='';
     db.labels.forEach((lbl,i)=>{
@@ -1015,10 +1044,11 @@ let spChart, spSubj='math';
   document.querySelectorAll('#sp-subj-btns .cf-btn').forEach(b=>{
     b.onclick=()=>{
       document.querySelectorAll('#sp-subj-btns .cf-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on');
-      spSubj=b.dataset.s; updateSpider();
+      spSubj=b.dataset.s; populateTopics(); updateSpider();
     };
   });
-  updateSpider();
+  $('sp-topic-sel').onchange=()=>{spTopic=$('sp-topic-sel').value; updateSpider();};
+  populateTopics(); updateSpider();
 })();
 
 
