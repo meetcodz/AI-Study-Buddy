@@ -12,6 +12,22 @@
       background:#0A0C12;
       color:#F0F2F5;
     }
+    section{
+      padding:60px;
+      border-bottom:1px solid #1A2535;
+    }
+
+    h1,h2{
+      margin-bottom:10px;
+    }
+
+    p{
+      color:#4B5563;
+    }
+    .blue{color:#3B82F6;}
+    .green{color:#14B8A6;}
+    .yellow{color:#F59E0B;}
+    </style>
 </head>
 <body>
     
