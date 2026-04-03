@@ -16,7 +16,6 @@ body{
   padding-top:70px;
 }
 
-/* HEADER */
 header{
   position:fixed;
   top:0;
@@ -24,16 +23,13 @@ header{
   width:100%;
   height:60px;
   box-sizing:border-box;
-
   display:flex;
   justify-content:space-between;
   align-items:center;
-
   padding:0 30px;
   backdrop-filter:blur(8px);
   background:rgba(10,12,18,0.7);
   border-bottom:1px solid #1A2535;
-
   z-index:1000;
 }
 
@@ -61,7 +57,6 @@ header{
   color:#3B82F6;
 }
 
-/* HERO */
 .hero{
   height:50vh;
   display:flex;
@@ -80,21 +75,18 @@ header{
   color:#4B5563;
 }
 
-/* SECTION */
 .section{
   max-width:1100px;
   margin:auto;
   padding:40px 20px;
 }
 
-/* GRID */
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:20px;
 }
 
-/* CARD */
 .card{
   background:#0F1520;
   border:1px solid #1A2535;
@@ -109,7 +101,6 @@ header{
   box-shadow:0 10px 30px rgba(59,130,246,0.15);
 }
 
-/* TEXT */
 h2{
   margin-bottom:20px;
 }
@@ -120,7 +111,6 @@ h2{
   margin-bottom:10px;
 }
 
-/* PROGRESS */
 .progress{
   height:6px;
   background:#1A2535;
@@ -134,7 +124,6 @@ h2{
   background:#3B82F6;
 }
 
-/* HEATMAP */
 .heatmap{
   display:grid;
   grid-template-columns:repeat(10,1fr);
@@ -150,7 +139,6 @@ h2{
   background:#14B8A6;
 }
 
-/* CHART */
 .chart{
   height:180px;
   border:2px dashed #1A2535;
@@ -161,7 +149,6 @@ h2{
   border-radius:12px;
 }
 
-/* RESPONSIVE */
 @media(max-width:800px){
   .grid{
     grid-template-columns:1fr;
@@ -183,8 +170,8 @@ h2{
 </header>
 
 <div class="hero">
-  <h1>25:00</h1>
-  <p>Focus Session (Pomodoro)</p>
+  <h1 id="clock">--:--:--</h1>
+  <p>Indian Standard Time</p>
 </div>
 
 <div class="section">
@@ -202,14 +189,13 @@ h2{
     <div class="card">
       <h3>Study Timer</h3>
       <h2>25:00</h2>
-      <p style="color:#4B5563">Focus Mode</p>
+      <p style="color:#4B5563">Pomodoro Focus Session</p>
     </div>
   </div>
 </div>
 
 <div class="section">
   <h2>Activity</h2>
-
   <div class="card">
     <h3>Heatmap</h3>
     <div class="heatmap">
@@ -242,6 +228,23 @@ h2{
     </div>
   </div>
 </div>
+
+<script>
+function updateClock(){
+  const now = new Date();
+  const options = {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  };
+  const time = now.toLocaleTimeString('en-IN', options);
+  document.getElementById('clock').innerText = time;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+</script>
 
 </body>
 </html>
