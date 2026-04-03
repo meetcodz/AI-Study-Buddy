@@ -1,0 +1,182 @@
+[
+  {
+    "model": "quiz.question",
+    "pk": 1,
+    "fields": {
+      "text": "What is the value of \u00cf\u20ac (pi) to two decimal places?",
+      "options": [
+        "3.12",
+        "3.14",
+        "3.16",
+        "3.18"
+      ],
+      "correct_answer": "3.14",
+      "topic": "Mathematics",
+      "difficulty": "easy",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 2,
+    "fields": {
+      "text": "Which planet is known as the Red Planet?",
+      "options": [
+        "Venus",
+        "Jupiter",
+        "Mars",
+        "Saturn"
+      ],
+      "correct_answer": "Mars",
+      "topic": "Science",
+      "difficulty": "easy",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 3,
+    "fields": {
+      "text": "What is the chemical symbol for gold?",
+      "options": [
+        "Go",
+        "Gd",
+        "Au",
+        "Ag"
+      ],
+      "correct_answer": "Au",
+      "topic": "Chemistry",
+      "difficulty": "easy",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 4,
+    "fields": {
+      "text": "Who wrote the play 'Romeo and Juliet'?",
+      "options": [
+        "Charles Dickens",
+        "William Shakespeare",
+        "Jane Austen",
+        "Mark Twain"
+      ],
+      "correct_answer": "William Shakespeare",
+      "topic": "Literature",
+      "difficulty": "easy",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 5,
+    "fields": {
+      "text": "Solve: If x\u00c2\u00b2 = 64, what are the possible values of x?",
+      "options": [
+        "8 only",
+        "-8 only",
+        "8 and -8",
+        "4 and -4"
+      ],
+      "correct_answer": "8 and -8",
+      "topic": "Mathematics",
+      "difficulty": "medium",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 6,
+    "fields": {
+      "text": "What is Newton's Second Law of Motion?",
+      "options": [
+        "An object in motion stays in motion",
+        "For every action there is an equal and opposite reaction",
+        "Force equals mass times acceleration",
+        "Energy can neither be created nor destroyed"
+      ],
+      "correct_answer": "Force equals mass times acceleration",
+      "topic": "Physics",
+      "difficulty": "medium",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 7,
+    "fields": {
+      "text": "In which year did the First World War begin?",
+      "options": [
+        "1910",
+        "1912",
+        "1914",
+        "1916"
+      ],
+      "correct_answer": "1914",
+      "topic": "History",
+      "difficulty": "medium",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 8,
+    "fields": {
+      "text": "What is the derivative of sin(x)?",
+      "options": [
+        "-cos(x)",
+        "cos(x)",
+        "-sin(x)",
+        "tan(x)"
+      ],
+      "correct_answer": "cos(x)",
+      "topic": "Mathematics",
+      "difficulty": "hard",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 9,
+    "fields": {
+      "text": "Which of the following is NOT a noble gas?",
+      "options": [
+        "Neon",
+        "Argon",
+        "Nitrogen",
+        "Krypton"
+      ],
+      "correct_answer": "Nitrogen",
+      "topic": "Chemistry",
+      "difficulty": "hard",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quiz.question",
+    "pk": 10,
+    "fields": {
+      "text": "In the context of Big-O notation, what is the time complexity of binary search?",
+      "options": [
+        "O(n)",
+        "O(n\u00c2\u00b2)",
+        "O(log n)",
+        "O(1)"
+      ],
+      "correct_answer": "O(log n)",
+      "topic": "Computer Science",
+      "difficulty": "hard",
+      "solution_image": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  }
+]
