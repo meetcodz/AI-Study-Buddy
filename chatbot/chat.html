@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>StudyCoach AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="chat.css">
 </head>
 <body>
-  
+
 <div class="chat-widget">
 
+  <!-- HEADER -->
   <div class="chat-header">
     <div class="h-avatar">🎓</div>
     <div class="h-info">
@@ -27,6 +29,7 @@
     </button>
   </div>
 
+  <!-- MESSAGES -->
   <div class="msgs" id="msgs">
     <div class="divider"><span>Today</span></div>
     <div class="msg-group">
@@ -43,7 +46,7 @@
     </div>
   </div>
 
-
+  <!-- SUGGESTIONS -->
   <div class="sugg-wrap" id="suggWrap">
     <div class="sugg-label">Quick actions</div>
     <div class="sugg-row">
@@ -54,6 +57,7 @@
     </div>
   </div>
 
+  <!-- INPUT -->
   <div class="input-bar">
     <div class="input-row">
       <textarea id="inp" placeholder="Ask me anything academic…" rows="1"
@@ -67,5 +71,6 @@
 
 </div>
 
+<script src="chat.js"></script>
 </body>
 </html>
