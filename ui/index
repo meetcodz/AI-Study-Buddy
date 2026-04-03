@@ -6,12 +6,21 @@
     <title>StudyFlow</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap" rel="stylesheet">
     <style>
-    .top-right
-    {
-        position:fixed;
-        top:10px;
-        right:10px;
-        
+    .top-nav{
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    display: flex;
+     gap: 20px;
+    }
+
+    .top-nav div{
+     cursor: pointer;
+     font-size: 14px;
+    }
+
+    .top-nav div:hover{
+    color:#3B82F6;
     }
     body{
       margin:0;
@@ -37,6 +46,12 @@
     </style>
 </head>
 <body>
+    <div class="top-nav">
+     <div>Home</div>
+     <div>Questions</div>
+     <div>Quiz</div>
+     <div>Profile</div>
+    </div>
     <section>
         <h1 class="blue">Dashboard</h1>
         <p>Basic UI for dashboard will be added here</p>
