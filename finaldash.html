@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>StudyFlow — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* ═══════════ BASE ═══════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.mono{font-family:'JetBrains Mono',monospace}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1E2535;border-radius:2px}
+
+/* ═══════════ NEW TOP NAV ═══════════ */
+.top-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 1000;
+  background: linear-gradient(to bottom, rgba(10,12,18,0.8), transparent);
+  backdrop-filter: blur(8px);
+}
+.nav-left { display: flex; gap: 20px; align-items: center; }
+.nav-btn {
+  background: rgba(30,37,53,0.4);
+  border: 1px solid rgba(59,130,246,0.1);
+  color: #8892A4;
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.22,1,.36,1);
+}
+.nav-btn:hover {
+  background: rgba(59,130,246,0.1);
+  border-color: rgba(59,130,246,0.3);
+  color: #3B82F6;
+  transform: translateY(-2px);
+}
+.nav-btn i { width: 20px; height: 20px; }
+.profile-btn {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #1E2535, #0A0C12);
+  border: 1px solid rgba(59,130,246,0.2);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s ease;
+}
+.profile-btn:hover { transform: scale(1.05); border-color: #3B82F6; }
+.profile-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ═══════════ HERO ═══════════ */
+#hero{
+  height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+#hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,0.035) 1px,transparent 1px);
+  background-size:64px 64px;pointer-events:none;
+}
+#hero-glow{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 55% at 50% 42%,rgba(59,130,246,0.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+#particle-canvas{position:absolute;inset:0;pointer-events:none;z-index:0}
+.hero-inner{position:relative;z-index:2;text-align:center}
+
+.hero-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);
+  border-radius:999px;padding:6px 18px;margin-bottom:28px;
+  font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#3B82F6;
+  opacity:0;animation:aUp .9s .1s cubic-bezier(.22,1,.36,1) forwards;
+}
+.hero-chip-dot{width:6px;height:6px;border-radius:50%;background:#3B82F6;animation:pulse 2s ease-in-out infinite}
+
+#clock{
+  font-size:clamp(72px,14vw,150px);font-weight:900;
+  letter-spacing:-0.05em;line-height:1;
+  font-variant-numeric:tabular-nums;
+  background:linear-gradient(160deg,#F0F2F5 20%,#4B5563 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0;animation:aScale .9s .22s cubic-bezier(.22,1,.36,1) forwards;
+}
+.dg{display:inline-block;transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .3s}
+.sep{background:linear-gradient(160deg,#1E3A5F,#2a4f80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:blink 1s step-end infinite;margin:0 3px}
+
+.ist-row{
+  display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;
+  opacity:0;animation:aUp .9s .42s cubic-bezier(.22,1,.36,1) forwards;
+}
+.ist-badge{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.18);border-radius:7px;padding:4px 11px;font-size:12px;font-weight:700;letter-spacing:.1em;color:#3B82F6}
+#hero-date{font-size:14px;color:#4B5563;font-weight:500}
+
+.sec-track{
+  margin-top:30px;
+  opacity:0;animation:aUp .9s .6s cubic-bezier(.22,1,.36,1) forwards;
+}
+.sec-track-bg{width:min(280px,65vw);height:2px;background:#111827;border-radius:1px;overflow:hidden;margin:0 auto}
+#sec-fill{height:100%;background:linear-gradient(90deg,#1d4ed8,#3B82F6,#60a5fa);border-radius:1px;transition:width 1s linear;width:0%}
+.sec-lbl{font-size:10px;color:#1E2535;letter-spacing:.13em;text-transform:uppercase;text-align:center;margin-top:8px;font-weight:700}
+
+.scroll-cue{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:3;
+  display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer;
+  opacity:0;animation:aUp .9s 1.1s cubic-bezier(.22,1,.36,1) forwards;
+}
+.scroll-cue-txt{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#1E2D40;font-weight:700}
+.mouse-shell{width:22px;height:34px;border:2px solid #1E2D40;border-radius:11px;display:flex;justify-content:center;padding-top:6px}
+.mouse-dot{width:3px;height:6px;border-radius:3px;background:#374151;animation:mscroll 1.8s ease-in-out infinite}
+
+/* ═══════════ SECTION LAYOUT ═══════════ */
+.page-section{
+  max-width:1120px;margin:0 auto;
+  padding:90px 28px;
+  position:relative;
+}
+.sec-divider{
+  max-width:1120px;margin:0 auto;padding:0 28px;
+}
+.sec-divider-line{
+  height:1px;
+  background:linear-gradient(90deg,transparent,#1A2535 30%,#1A2535 70%,transparent);
+}
+
+.sec-eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:#14B8A6;margin-bottom:10px;
+}
+.ey-line{width:22px;height:1px;background:#14B8A6}
+.sec-title{
+  font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-0.04em;
+  line-height:1.05;color:#F0F2F5;margin-bottom:36px;
+}
+
+/* ═══════════ REVEAL ═══════════ */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .85s cubic-bezier(.22,1,.36,1),transform .85s cubic-bezier(.22,1,.36,1)}
+.reveal.in{opacity:1;transform:translateY(0)}
+.rd1{transition-delay:.07s}.rd2{transition-delay:.14s}.rd3{transition-delay:.21s}
+
+/* ═══════════ PAIR GRID + HOVER EXPAND ═══════════ */
+.pair{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;
+  align-items:start;
+}
+
+/* ═══════════ FEATURE CARD ═══════════ */
+.feat-card{
+  background:#0F1520;border:1px solid #1A2535;border-radius:24px;
+  padding:30px;position:relative;overflow:visible;
+  z-index:1;
+  transition:border-color .4s,box-shadow .4s,transform .45s cubic-bezier(.22,1,.36,1);
+}
+.feat-card::after{
+  content:'';position:absolute;top:0;left:20px;right:20px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(59,130,246,0.2),transparent);
+  transition:background .4s;
+}
+.feat-card:hover{
+  border-color:#3B82F6;
+  box-shadow:0 30px 70px rgba(0,0,0,0.6),0 0 20px rgba(59,130,246,0.15);
+  transform:scale(1.04);
+  z-index:10;
+}
+.feat-card:hover::after{
+  background:linear-gradient(90deg,transparent,rgba(20,184,166,0.4),transparent);
+}
+.card-title{font-size:11px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px}
+
+/* ═══════════ CARD ARROW BUTTON ═══════════ */
+.card-arrow{
+  position:absolute;top:20px;right:20px;z-index:20;
+  width:44px;height:44px;
+  background:rgba(10,12,18,0.85);
+  border:1px solid #3B82F6;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#3B82F6;cursor:pointer;backdrop-filter:blur(4px);text-decoration:none;
+  opacity:0;transform:scale(0.8) translate(-10px,10px);
+  transition:all 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+.feat-card:hover .card-arrow,.hmap-card:hover .card-arrow{opacity:1;transform:scale(1) translate(0,0);}
+.card-arrow:hover{background:#3B82F6;color:#FFF;}
+
+/* ═══════════ TOOLTIP ═══════════ */
+#tooltip{
+  position:fixed;background:#0D1118;border:1px solid #1E2D44;
+  border-radius:11px;padding:11px 15px;pointer-events:none;z-index:999;
+  opacity:0;transform:translateY(6px);transition:opacity .18s,transform .18s;
+  white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.6);
+}
+#tooltip.show{opacity:1;transform:translateY(0)}
+
+/* ═══════════ GOAL CARD INTERNALS ═══════════ */
+.goal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+#g-headline{font-size:20px;font-weight:800;color:#F0F2F5;letter-spacing:-0.04em;line-height:1.15;margin-top:4px}
+#g-sub{font-size:12px;color:#4B5563;margin-top:3px}
+
+.counter-row{display:flex;align-items:center;gap:0;margin-bottom:14px}
+.cnt-btn{width:36px;height:36px;border:none;cursor:pointer;font-size:20px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Outfit',sans-serif}
+.cnt-btn:hover{filter:brightness(1.15)}
+.cnt-disp{height:36px;min-width:64px;padding:0 16px;
+  background:#131B28;display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:500;color:#F0F2F5;
+  border-top:1px solid #1A2535;border-bottom:1px solid #1A2535}
+
+.prog-wrap{height:5px;background:#1A2535;border-radius:3px;overflow:hidden;margin-bottom:16px}
+.prog-bar{height:100%;background:linear-gradient(90deg,#1d4ed8,#3B82F6);border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+.goal-target-box{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#131B28;border:1px solid #1A2535;border-radius:12px;padding:13px 15px;margin-bottom:18px;
+}
+.goal-act-btn{
+  height:28px;padding:0 12px;font-size:11px;font-weight:700;border-radius:8px;
+  background:rgba(59,130,246,0.1);color:#3B82F6;border:1px solid rgba(59,130,246,0.2);
+  cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;
+}
+.goal-act-btn:hover{background:rgba(59,130,246,0.18)}
+
+.streak-row{display:flex;gap:8px;margin-top:18px}
+.streak-box{flex:1;background:#131B28;border:1px solid #1A2535;border-radius:12px;padding:13px 14px}
+
+/* ═══════════ TIMER CARD INTERNALS ═══════════ */
+.ttabs{display:flex;background:#070B11;border-radius:11px;padding:3px;gap:2px;margin-bottom:22px}
+.ttab{
+  flex:1;height:30px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;
+  font-size:11.5px;font-weight:600;border-radius:9px;
+  background:transparent;color:#4B5563;
+  transition:all .22s cubic-bezier(.22,1,.36,1);
+}
+.ttab.on{background:#0F1520;box-shadow:0 0 0 1px #1A2535}
+
+.ring-zone{display:flex;justify-content:center;margin-bottom:22px}
+
+.tctrl{display:flex;gap:9px;margin-bottom:14px}
+.t-play{
+  flex:1;height:46px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;
+  font-size:14px;font-weight:700;border-radius:12px;
+  transition:all .2s cubic-bezier(.22,1,.36,1);
+}
+.t-play:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.t-play:active{transform:scale(.98)}
+.t-sq{
+  width:46px;height:46px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;
+  font-size:18px;border-radius:12px;background:#161D2C;color:#4B5563;
+  border:1px solid #1A2535;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;
+}
+.t-sq:hover{background:#1E2A3C;color:#F0F2F5}
+.tbar-wrap{height:3px;background:#0E1320;border-radius:2px;overflow:hidden;margin-bottom:18px}
+.tbar{height:100%;border-radius:2px;transition:width 1s linear}
+.sdots-row{display:flex;align-items:center;gap:4px}
+.sdot{height:4px;border-radius:2px;transition:all .4s cubic-bezier(.22,1,.36,1)}
+
+/* ═══════════ HEATMAP ═══════════ */
+.hmap-card{
+  background:#0F1520;border:1px solid #1A2535;border-radius:24px;
+  padding:28px 28px 22px;position:relative;
+}
+.hmap-card::after{
+  content:'';position:absolute;top:0;left:20px;right:20px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(20,184,166,0.25),transparent);
+  pointer-events:none;
+}
+.hmap-toggle{display:inline-flex;background:#070B11;border:1px solid #1A2535;border-radius:9px;padding:3px;gap:2px}
+.ht-btn{
+  border:none;cursor:pointer;font-family:'Outfit',sans-serif;
+  font-size:11.5px;font-weight:600;border-radius:7px;
+  padding:6px 14px;background:transparent;color:#4B5563;
+  transition:all .2s cubic-bezier(.22,1,.36,1);
+}
+.ht-btn.on{background:#0F1520;color:#14B8A6;box-shadow:0 0 0 1px #1A2535}
+.hcell{aspect-ratio:1;border-radius:2px;cursor:pointer;transition:transform .12s,outline .1s;outline:1.5px solid transparent;outline-offset:1px;position:relative}
+.hcell:hover{transform:scale(1.8);z-index:10;outline-color:rgba(255,255,255,0.35);filter:brightness(1.4)}
+
+/* ═══════════ CHART CARDS ═══════════ */
+.chart-filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.cf-btn{
+  padding:5px 13px;border-radius:8px;border:1px solid #1A2535;
+  background:#131B28;color:#4B5563;cursor:pointer;
+  font-size:11.5px;font-weight:600;font-family:'Outfit',sans-serif;
+  transition:all .18s;
+}
+.cf-btn.on{background:#14B8A6;color:#0A0C12;border-color:#14B8A6}
+.cf-sel{
+  background:#131B28;border:1px solid #1A2535;color:#F0F2F5;
+  padding:6px 10px;border-radius:8px;font-size:11.5px;font-family:'Outfit',sans-serif;
+  outline:none;cursor:pointer;
+}
+.chart-stats{display:flex;gap:16px;margin-top:16px;padding-top:16px;border-top:1px solid #1A2535}
+.cstat{font-size:11px;color:#4B5563;font-weight:600}
+.cstat-val{display:block;font-size:20px;color:#14B8A6;font-family:'JetBrains Mono',monospace;font-weight:500;margin-top:3px;line-height:1}
+
+.topic-list .tl-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 0;border-bottom:1px solid #111827;
+  font-size:12.5px;font-weight:500;
+}
+.tl-item:last-child{border-bottom:none}
+
+/* ═══════════ MONTH BREAKDOWN ═══════════ */
+.mb-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:14px}
+.mb-c{
+  background:#131B28;border:1px solid #1A2535;border-radius:11px;
+  padding:11px 13px;position:relative;overflow:hidden;
+  transition:all .2s cubic-bezier(.22,1,.36,1);cursor:default;
+}
+.mb-c:hover{border-color:#1E2D44;transform:translateY(-2px)}
+.mb-c::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--mc);transform:scaleX(var(--mf,0));transform-origin:left;
+  transition:transform .55s cubic-bezier(.22,1,.36,1);
+}
+
+/* ═══════════ KEYFRAMES ═══════════ */
+@keyframes aUp{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes aScale{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes blink{0%,100%{opacity:.5}50%{opacity:.12}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+@keyframes mscroll{0%{opacity:1;transform:translateY(0)}80%{opacity:0;transform:translateY(10px)}100%{opacity:0}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="nav-left">
+    <div class="nav-btn" title="Home"><i data-lucide="home"></i></div>
+    <div class="nav-btn" title="Quiz"><i data-lucide="brain-circuit"></i></div>
+    <div class="nav-btn" title="Analyse"><i data-lucide="bar-chart-3"></i></div>
+    <div class="nav-btn" title="Questions"><i data-lucide="layers"></i></div>
+  </div>
+  <div class="profile-btn" title="Profile">
+    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #4B5563;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+  </div>
+</nav>
+
+<div id="tooltip">
+  <div id="tt-date" style="font-size:11px;color:#6B7280;margin-bottom:4px;font-weight:500"></div>
+  <div id="tt-count" style="font-size:17px;font-weight:700;color:#14B8A6;line-height:1"></div>
+  <div id="tt-bar" style="height:3px;background:#14B8A6;border-radius:2px;margin-top:8px;min-width:70px;transition:width .3s"></div>
+</div>
+
+<section id="hero">
+  <canvas id="particle-canvas"></canvas>
+  <div id="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-chip"><div class="hero-chip-dot"></div>Indian Standard Time &nbsp;·&nbsp; UTC +5:30</div>
+    <div id="clock" class="mono">
+      <span class="dg" id="dg-h"><span id="ch">00</span></span><span class="sep">:</span><span class="dg" id="dg-m"><span id="cm">00</span></span><span class="sep">:</span><span class="dg" id="dg-s"><span id="cs">00</span></span>
+    </div>
+    <div class="ist-row">
+      <div class="ist-badge">IST</div>
+      <div id="hero-date" style="font-size:14px;color:#4B5563;font-weight:500"></div>
+    </div>
+    <div class="sec-track">
+      <div class="sec-track-bg"><div id="sec-fill"></div></div>
+      <div class="sec-lbl">seconds in current minute</div>
+    </div>
+  </div>
+  <div class="scroll-cue" onclick="document.getElementById('sec1').scrollIntoView({behavior:'smooth'})">
+    <div class="scroll-cue-txt">scroll to explore</div>
+    <div class="mouse-shell"><div class="mouse-dot"></div></div>
+  </div>
+</section>
+
+<div class="sec-divider"><div class="sec-divider-line"></div></div>
+<section class="page-section" id="sec1">
+  <div class="reveal">
+    <div class="sec-eyebrow"><div class="ey-line"></div>Study Tracker<div class="ey-line"></div></div>
+    <h2 class="sec-title">Set your goal.<br>Start the clock.</h2>
+  </div>
+
+  <div class="pair reveal rd1" id="pair1">
+
+    <div class="feat-card" id="goal-card">
+      <a href="DailyGoal.html" class="card-arrow" title="Open Daily Goal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      <div class="card-title">Daily Goal</div>
+      <div class="goal-top">
+        <div>
+          <div id="g-headline">13 questions to go</div>
+          <div id="g-sub">Keep going, you're 35% there</div>
+        </div>
+        <div style="position:relative;width:74px;height:74px;flex-shrink:0">
+          <svg width="74" height="74" style="transform:rotate(-90deg);display:block">
+            <circle cx="37" cy="37" r="30" fill="none" stroke="#131B28" stroke-width="7"/>
+            <circle id="g-arc" cx="37" cy="37" r="30" fill="none" stroke="#3B82F6" stroke-width="7"
+              stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke-linecap="round"
+              style="transition:stroke-dashoffset .7s cubic-bezier(.4,0,.2,1),stroke .3s"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <span class="mono" id="g-pct" style="font-size:14px;font-weight:500;color:#3B82F6;line-height:1">0%</span>
+            <span style="font-size:9px;color:#4B5563;margin-top:2px">done</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;color:#4B5563;text-transform:uppercase;letter-spacing:.09em">Completed</div>
+        <div class="counter-row">
+          <button class="cnt-btn" id="g-minus" style="background:#131B28;color:#4B5563;border:1px solid #1A2535;border-right:none;border-radius:8px 0 0 8px">−</button>
+          <div class="cnt-disp mono" id="g-done">7</div>
+          <button class="cnt-btn" id="g-plus" style="background:rgba(59,130,246,0.1);color:#3B82F6;border:1px solid rgba(59,130,246,0.25);border-left:none;border-radius:0 8px 8px 0">+</button>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-bottom:7px">
+        <span style="font-size:11px;color:#4B5563" id="g-bar-lbl">7 of 20 completed</span>
+        <span class="mono" style="font-size:11px;color:#3B82F6" id="g-bar-frac">7 / 20</span>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-bar" id="g-bar" style="width:35%"></div>
+      </div>
+
+      <div class="goal-target-box">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:3px">Daily target</div>
+          <div style="font-size:12px;color:#4B5563">Questions per day</div>
+        </div>
+        <div id="g-view" style="display:flex;align-items:center;gap:8px">
+          <span class="mono" id="g-goal-disp" style="font-size:20px;font-weight:500;color:#F0F2F5">20</span>
+          <button class="goal-act-btn" id="g-edit-btn">Edit</button>
+        </div>
+        <div id="g-edit-form" style="display:none;align-items:center;gap:7px">
+          <input class="mono" id="g-inp" type="number" min="1" max="200" value="20"
+            style="width:58px;height:32px;background:#070B11;border:1px solid #3B82F6;border-radius:7px;padding:0 8px;color:#F0F2F5;font-size:14px;outline:none;text-align:center"/>
+          <button class="goal-act-btn" id="g-save" style="background:#3B82F6;color:#fff;border-color:#3B82F6">Save</button>
+          <button class="goal-act-btn" id="g-cancel" style="background:#131B28;color:#4B5563;border-color:#1A2535">✕</button>
+        </div>
+      </div>
+
+      <div style="font-size:10px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px">This week</div>
+      <div id="g-week" style="display:flex;gap:5px;align-items:flex-end;height:40px"></div>
+      <div id="g-week-lbl" style="display:flex;gap:5px;margin-top:5px"></div>
+
+      <div class="streak-row">
+        <div class="streak-box">
+          <div style="font-size:9px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px">Streak</div>
+          <div class="mono" style="font-size:22px;font-weight:500;color:#F59E0B">12 <span style="font-size:11px;color:#4B5563;font-family:'Outfit',sans-serif">days 🔥</span></div>
+        </div>
+        <div class="streak-box">
+          <div style="font-size:9px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px">Best</div>
+          <div class="mono" style="font-size:22px;font-weight:500;color:#4B5563">18 <span style="font-size:11px;font-family:'Outfit',sans-serif">days</span></div>
+        </div>
+        <div class="streak-box">
+          <div style="font-size:9px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px">Total</div>
+          <div class="mono" style="font-size:22px;font-weight:500;color:#3B82F6">1847</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat-card" id="timer-card">
+      <a href="pomodoro.html" class="card-arrow" title="Open Pomodoro Timer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      <div class="card-title">Study Timer · Pomodoro</div>
+
+      <div class="ttabs">
+        <button class="ttab on" data-mode="study" data-dur="1500" data-col="#14B8A6" data-rgb="20,184,166" data-lbl="Focus">Focus</button>
+        <button class="ttab" data-mode="short" data-dur="300" data-col="#8B5CF6" data-rgb="139,92,246" data-lbl="Short break">Short break</button>
+        <button class="ttab" data-mode="long" data-dur="900" data-col="#F59E0B" data-rgb="245,158,11" data-lbl="Long break">Long break</button>
+      </div>
+
+      <div class="ring-zone">
+        <div style="position:relative;width:190px;height:190px">
+          <svg width="190" height="190" style="position:absolute;inset:0;transform:rotate(-90deg)">
+            <circle cx="95" cy="95" r="90" fill="none" stroke="rgba(20,184,166,0.06)" stroke-width="1" stroke-dasharray="3 7" stroke-linecap="round"/>
+          </svg>
+          <svg width="190" height="190" style="position:absolute;inset:0;transform:rotate(-90deg)">
+            <circle cx="95" cy="95" r="80" fill="none" stroke="#0E1520" stroke-width="10"/>
+            <circle id="t-arc" cx="95" cy="95" r="80" fill="none" stroke="#14B8A6" stroke-width="10"
+              stroke-dasharray="502.7" stroke-dashoffset="0" stroke-linecap="round"
+              style="transition:stroke-dashoffset 1s linear,stroke .4s"/>
+          </svg>
+          <div id="t-glow" style="position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle,rgba(20,184,166,0.07),transparent 65%);pointer-events:none;transition:background .5s"></div>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2">
+            <div class="mono" id="t-disp" style="font-size:46px;font-weight:300;color:#F0F2F5;letter-spacing:.02em;line-height:1">25:00</div>
+            <div id="t-lbl" style="font-size:11px;color:#4B5563;margin-top:6px;font-weight:600;letter-spacing:.12em;text-transform:uppercase">Focus</div>
+            <div id="t-status" style="margin-top:5px;height:16px;display:flex;align-items:center">
+              <span id="t-running" style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#14B8A6;opacity:0;transition:opacity .4s">
+                <span style="width:5px;height:5px;border-radius:50%;background:#14B8A6;animation:pulse 1.4s ease-in-out infinite"></span>RUNNING
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tctrl">
+        <button class="t-play" id="t-tog" style="background:#14B8A6;color:#0A0C12;box-shadow:0 5px 28px rgba(20,184,166,0.35)">▶ &nbsp;Start Focus</button>
+        <button class="t-sq" id="t-reset">↺</button>
+        <button class="t-sq" id="t-skip">⏭</button>
+      </div>
+
+      <div class="tbar-wrap"><div class="tbar" id="t-bar" style="background:#14B8A6;width:0%"></div></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px">Sessions today</div>
+          <div class="sdots-row" id="t-sdots"></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px">Total focus</div>
+          <div class="mono" id="t-focus" style="font-size:20px;font-weight:500;color:#14B8A6;transition:color .4s">1h 15m</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sec-divider"><div class="sec-divider-line"></div></div>
+<section class="page-section" id="sec2">
+  <div class="reveal" style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;flex-wrap:wrap;gap:14px">
+    <div>
+      <div class="sec-eyebrow"><div class="ey-line"></div>Activity<div class="ey-line"></div></div>
+      <h2 class="sec-title" style="margin-bottom:0">Questions solved per day</h2>
+    </div>
+    <div class="hmap-toggle" id="hmap-toggle">
+      <button class="ht-btn on" data-w="26">6 months</button>
+      <button class="ht-btn" data-w="52">Full year</button>
+    </div>
+  </div>
+
+  <div class="hmap-card reveal rd1" style="position:relative;">
+    <a href="heatmap.html" class="card-arrow" title="Open Study Heatmap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px" id="hm-stats"></div>
+
+    <div style="display:flex;gap:0;margin-bottom:5px;padding-left:28px;position:relative;height:18px" id="hm-months"></div>
+
+    <div style="display:flex;gap:0;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:3px;margin-right:8px;padding-top:2px;width:20px;flex-shrink:0">
+        <div style="height:12px;font-size:9px;color:#2E3648;line-height:12px;text-align:right"></div>
+        <div style="height:12px;font-size:9px;color:#2E3648;line-height:12px;text-align:right">M</div>
+        <div style="height:12px;font-size:9px;color:#2E3648;line-height:12px;text-align:right"></div>
+        <div style="height:12px;font-size:9px;color:#2E3648;line-height:12px;text-align:right">W</div>
+        <div style="height:12px;font-size:9px;color:#2E3648;line-height:12px;text-align:right"></div>
+        <div style="height:12px;font-size:9px;color:#2E3648;line-height:12px;text-align:right">F</div>
+        <div style="height:12px;font-size:9px;color:#2E3648;line-height:12px;text-align:right"></div>
+      </div>
+      <div id="hm-grid" style="display:flex;gap:3px;flex:1;min-width:0"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+      <div id="hm-tip" style="font-size:12px;color:#4B5563;height:20px;display:flex;align-items:center;gap:9px;opacity:0;transition:opacity .2s"></div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <span style="font-size:9px;color:#2E3648">none</span>
+        <div style="width:11px;height:11px;border-radius:2px;background:#0D1118;border:1px solid #1A2535"></div>
+        <div style="width:11px;height:11px;border-radius:2px;background:#134e4a"></div>
+        <div style="width:11px;height:11px;border-radius:2px;background:#0f766e"></div>
+        <div style="width:11px;height:11px;border-radius:2px;background:#0d9488"></div>
+        <div style="width:11px;height:11px;border-radius:2px;background:#14B8A6"></div>
+        <div style="width:11px;height:11px;border-radius:2px;background:#5eead4"></div>
+        <span style="font-size:9px;color:#2E3648">lots</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-grid reveal rd2" id="hm-months-breakdown"></div>
+</section>
+
+<div class="sec-divider"><div class="sec-divider-line"></div></div>
+<section class="page-section" id="sec3" style="padding-bottom:120px">
+  <div class="reveal">
+    <div class="sec-eyebrow"><div class="ey-line"></div>Performance Analytics<div class="ey-line"></div></div>
+    <h2 class="sec-title">Track accuracy.<br>Know your weak spots.</h2>
+  </div>
+
+  <div class="pair reveal rd1" id="pair2">
+
+    <div class="feat-card" id="accuracy-card">
+      <a href="topicaccuracy.html" class="card-arrow" title="Open Accuracy Trend"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      <div class="card-title">Accuracy Trend</div>
+      <div class="chart-filter-row" id="acc-subj-btns">
+        <button class="cf-btn on" data-s="math">Math</button>
+        <button class="cf-btn" data-s="physics">Physics</button>
+        <button class="cf-btn" data-s="chem">Chemistry</button>
+        <select class="cf-sel" id="acc-topic-sel"></select>
+      </div>
+      <div style="position:relative;height:200px">
+        <canvas id="acc-chart"></canvas>
+      </div>
+      <div class="chart-stats" id="acc-stats">
+        <div class="cstat">Current <span class="cstat-val" id="acc-curr">--</span></div>
+        <div class="cstat">Best <span class="cstat-val" id="acc-best" style="color:#3B82F6">--</span></div>
+        <div class="cstat">Average <span class="cstat-val" id="acc-avg" style="color:#8B5CF6">--</span></div>
+      </div>
+    </div>
+
+    <div class="feat-card" id="spider-card">
+      <a href="spidergraph.html" class="card-arrow" title="Open Topic Intelligence"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      <div class="card-title">Topic Intelligence</div>
+      <div class="chart-filter-row" id="sp-subj-btns">
+        <button class="cf-btn on" data-s="math">Math</button>
+        <button class="cf-btn" data-s="physics">Physics</button>
+        <button class="cf-btn" data-s="chem">Chemistry</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+        <div style="position:relative;height:200px">
+          <canvas id="sp-chart"></canvas>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#F43F5E;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px">⚡ Weak chapters</div>
+          <div class="topic-list" id="sp-weak" style="margin-bottom:16px"></div>
+          <div style="font-size:10px;font-weight:700;color:#14B8A6;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px">✦ Strong chapters</div>
+          <div class="topic-list" id="sp-strong"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+// Initialize Lucide icons
+lucide.createIcons();
+
+/* ═══════════════════════════════════════════
+   MOCK DATA — replace each block with:
+   await fetch('/api/...').then(r => r.json())
+═══════════════════════════════════════════ */
+const MOCK = {
+  goal:  { completed_today:7, target:20, week:[15,8,22,0,18,12,7], week_labels:['M','T','W','T','F','S','S'], streak:12, best_streak:18, total:1847 },
+  timer: { sessions_today:3, focus_today_min:75 },
+  heatmap: (function(){
+    const d={}, t=new Date();
+    const p=[14,18,22,16,0,8,5, 20,17,25,19,0,12,6, 0,15,21,18,24,0,9, 16,22,19,0,28,14,7,
+             12,0,20,23,17,11,0, 18,16,24,20,0,15,8, 0,22,19,26,17,0,11, 14,20,0,23,18,16,9,
+             0,17,21,24,0,19,13, 22,18,0,25,20,14,7, 15,0,23,21,18,0,12, 0,19,22,17,24,0,10,
+             16,21,0,25,19,15,8, 0,20,18,22,0,17,11, 18,14,0,21,23,16,0, 22,19,25,0,18,13,7,
+             0,16,20,24,18,0,11, 19,23,17,0,26,14,8, 15,0,22,20,18,14,0, 21,17,24,0,19,15,9,
+             0,18,23,21,0,17,12, 22,16,0,24,20,13,7, 14,19,0,23,18,16,0, 20,22,17,25,0,14,9,
+             0,18,21,24,0,19,11, 17,23,0,22,18,15,8, 16,0,24,20,0,18,12, 22,17,25,0,20,14,8];
+    p.forEach((v,i)=>{ const dt=new Date(t); dt.setDate(t.getDate()-i); d[dt.toISOString().slice(0,10)]=v; });
+    return d;
+  })(),
+  accuracy: {
+    math:    { Algebra:[60,65,70,68,72,78,81], Probability:[30,35,40,38,42,45,50], Calculus:[50,55,58,60,62,64,66] },
+    physics: { Kinematics:[55,58,60,62,64,66,68], Thermodynamics:[30,35,40,42,43,44,45], Optics:[45,48,50,52,55,57,60] },
+    chem:    { Organic:[60,62,65,68,70,73,75], Physical:[50,52,54,56,58,60,62], Inorganic:[40,42,44,46,48,50,52] },
+  },
+  spider: {
+    math:    { labels:['Probability','Algebra','Calculus','Matrices','Vectors'], data:[38,81,65,55,72] },
+    physics: { labels:['Kinematics','Thermodynamics','Optics','Current','Modern'], data:[62,44,58,49,70] },
+    chem:    { labels:['Organic','Inorganic','Physical','Bonding','Equilibrium'], data:[75,52,60,47,68] },
+  },
+};
+
+/* ── helpers ── */
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const fmtMs=s=>`${pad(Math.floor(s/60))}:${pad(s%60)}`;
+const today=new Date();
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* ═══ PARTICLES ═══ */
+(function(){
+  const cv=$('particle-canvas'), ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+  resize(); window.addEventListener('resize',resize);
+  class P{
+    constructor(){this.reset(true)}
+    reset(init){
+      this.x=Math.random()*W; this.y=init?Math.random()*H:H+5;
+      this.vx=(Math.random()-.5)*.28; this.vy=-(Math.random()*.4+.1);
+      this.r=Math.random()*1.4+.3; this.a=Math.random()*.35+.05;
+      this.life=1; this.col=Math.random()>.5?'59,130,246':'20,184,166';
+    }
+    update(){this.x+=this.vx;this.y+=this.vy;this.life-=.0015;if(this.life<=0||this.y<-5)this.reset(false);}
+    draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(${this.col},${this.a*this.life})`;ctx.fill();}
+  }
+  for(let i=0;i<80;i++)pts.push(new P());
+  (function loop(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.update();p.draw();});requestAnimationFrame(loop);})();
+})();
+
+/* ═══ IST CLOCK ═══ */
+(function(){
+  let ph=-1,pm=-1,ps=-1;
+  function bounce(id){
+    const el=$(id); el.style.transition='none'; el.style.transform='translateY(-8px)'; el.style.opacity='.3';
+    setTimeout(()=>{el.style.transition='transform .35s cubic-bezier(.22,1,.36,1),opacity .3s';el.style.transform='';el.style.opacity='';},16);
+  }
+  function tick(){
+    const now=new Date();
+    const ist=new Date(now.getTime()+5.5*3600000+now.getTimezoneOffset()*60000);
+    const h=ist.getHours(),m=ist.getMinutes(),s=ist.getSeconds();
+    if(h!==ph){$('ch').textContent=pad(h);bounce('dg-h');ph=h;}
+    if(m!==pm){$('cm').textContent=pad(m);bounce('dg-m');pm=m;}
+    if(s!==ps){$('cs').textContent=pad(s);bounce('dg-s');ps=s;}
+    $('sec-fill').style.width=(s/59*100)+'%';
+    $('hero-date').textContent=`${DAYS[ist.getDay()]}, ${MONTHS[ist.getMonth()]} ${ist.getDate()}, ${ist.getFullYear()}`;
+  }
+  tick(); setInterval(tick,1000);
+})();
+
+/* ═══ PARALLAX ═══ */
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY, vh=window.innerHeight;
+  if(y<vh){
+    const pct=y/vh;
+    document.querySelector('.hero-inner').style.cssText=`transform:translateY(${y*.22}px);opacity:${1-pct*1.3}`;
+  }
+});
+
+/* ═══ SCROLL REVEAL ═══ */
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* pair hover expand removed — cards now use scale-out animation */
+
+/* ═══ GOAL CARD ═══ */
+(function(){
+  const D=MOCK.goal;
+  let done=D.completed_today, goal=D.target;
+  const CIRC=188.5;
+
+  function render(){
+    const pct=goal>0?Math.min(done/goal,1):0;
+    const met=done>=goal;
+    const col=met?'#F59E0B':'#3B82F6';
+    const grad=met?'linear-gradient(90deg,#92400e,#F59E0B)':'linear-gradient(90deg,#1d4ed8,#3B82F6)';
+    $('g-arc').setAttribute('stroke-dashoffset',CIRC*(1-pct));
+    $('g-arc').setAttribute('stroke',col);
+    $('g-pct').textContent=Math.round(pct*100)+'%'; $('g-pct').style.color=col;
+    $('g-headline').textContent=met?'Goal crushed! 🎉':`${goal-done} question${goal-done!==1?'s':''} to go`;
+    $('g-sub').textContent=met?'Amazing — you nailed it today!':`Keep going, you're ${Math.round(pct*100)}% there`;
+    $('g-done').textContent=done;
+    $('g-done').style.animation='none'; void $('g-done').offsetWidth; $('g-done').style.animation='pop .25s cubic-bezier(.22,1,.36,1)';
+    $('g-bar').style.width=Math.min(100,pct*100)+'%'; $('g-bar').style.background=grad;
+    $('g-bar-lbl').textContent=`${done} of ${goal} completed`;
+    $('g-bar-frac').textContent=`${done} / ${goal}`; $('g-bar-frac').style.color=col;
+    $('g-goal-disp').textContent=goal;
+    $('g-plus').style.background=met?'rgba(245,158,11,0.1)':'rgba(59,130,246,0.1)';
+    $('g-plus').style.color=col; $('g-plus').style.borderColor=met?'rgba(245,158,11,0.25)':'rgba(59,130,246,0.25)';
+  }
+
+  $('g-minus').onclick=()=>{if(done>0){done--;render();}};
+  $('g-plus').onclick=()=>{done++;render();};
+  $('g-edit-btn').onclick=()=>{ $('g-view').style.display='none'; $('g-edit-form').style.display='flex'; $('g-inp').focus(); $('g-inp').select(); };
+  function saveGoal(){const v=parseInt($('g-inp').value);if(v>0)goal=v;$('g-view').style.display='flex';$('g-edit-form').style.display='none';render();}
+  $('g-save').onclick=saveGoal;
+  $('g-cancel').onclick=()=>{$('g-view').style.display='flex';$('g-edit-form').style.display='none';};
+  $('g-inp').addEventListener('keydown',e=>{if(e.key==='Enter')saveGoal();});
+
+  // week sparkline
+  const maxW=Math.max(...D.week,1), todayIdx=today.getDay()===0?6:today.getDay()-1;
+  D.week.forEach((v,i)=>{
+    const isTd=i===todayIdx, h=Math.max(4,Math.round((v/maxW)*36));
+    const bar=document.createElement('div');
+    bar.style.cssText=`flex:1;border-radius:3px 3px 0 0;height:${h}px;background:${isTd?'#3B82F6':v>0?'rgba(59,130,246,0.28)':'#131B28'};cursor:default;transition:background .15s`;
+    bar.title=`${D.week_labels[i]}: ${v} questions`;
+    $('g-week').appendChild(bar);
+    const lbl=document.createElement('div');
+    lbl.style.cssText=`flex:1;text-align:center;font-size:9px;color:${isTd?'#3B82F6':'#2E3648'};font-weight:${isTd?700:400}`;
+    lbl.textContent=D.week_labels[i]; $('g-week-lbl').appendChild(lbl);
+  });
+  render();
+})();
+
+/* ═══ TIMER ═══ */
+(function(){
+  const M={
+    study:{dur:1500,col:'#14B8A6',rgb:'20,184,166',lbl:'Focus',     btn:'▶ \u00a0Start Focus'},
+    short:{dur:300, col:'#8B5CF6',rgb:'139,92,246',lbl:'Short Break',btn:'▶ \u00a0Start Break'},
+    long: {dur:900, col:'#F59E0B',rgb:'245,158,11',lbl:'Long Break', btn:'▶ \u00a0Start Break'},
+  };
+  let mode='study',left=1500,run=false,sess=MOCK.timer.sessions_today,focMin=MOCK.timer.focus_today_min,iv=null;
+  const CIRC=502.7;
+
+  function theme(col,rgb){
+    $('t-arc').setAttribute('stroke',col); $('t-lbl').style.color=col;
+    $('t-glow').style.background=`radial-gradient(circle,rgba(${rgb},0.09),transparent 65%)`;
+    $('t-bar').style.background=col; $('t-running').style.color=col;
+    $('t-running').querySelector('span').style.background=col;
+    $('t-focus').style.color=col; $('t-focus').style.color=col;
+  }
+  function renderSess(){
+    const row=$('t-sdots'); row.innerHTML='';
+    for(let i=0;i<8;i++){
+      const d=document.createElement('div'); d.className='sdot';
+      const f=i<sess;
+      d.style.cssText=`flex:${f?1.7:1};height:${f?5:4}px;background:${f?(i%4===3?'#F59E0B':M[mode].col):'#1A2535'}`;
+      row.appendChild(d);
+    }
+    const h=Math.floor(focMin/60),mn=focMin%60;
+    $('t-focus').textContent=h>0?`${h}h ${mn}m`:`${mn}m`;
+  }
+  function ui(){
+    const cur=M[mode], pct=left/cur.dur;
+    $('t-arc').setAttribute('stroke-dashoffset',CIRC*(1-pct));
+    $('t-disp').textContent=fmtMs(left);
+    $('t-bar').style.width=((1-pct)*100)+'%';
+    $('t-running').style.opacity=run?'1':'0';
+    $('t-arc').style.filter=run?`drop-shadow(0 0 8px ${cur.col})`:'none';
+    $('t-glow').style.background=`radial-gradient(circle,rgba(${cur.rgb},${run?.12:.06}),transparent 65%)`;
+    const tog=$('t-tog');
+    if(run){
+      tog.textContent='⏸ \u00a0Pause';
+      tog.style.cssText=`flex:1;height:46px;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;background:rgba(${cur.rgb},.12);color:${cur.col};border:1.5px solid ${cur.col};box-shadow:none`;
+    } else {
+      tog.textContent=cur.btn;
+      tog.style.cssText=`flex:1;height:46px;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;background:${cur.col};color:#0A0C12;border:none;box-shadow:0 5px 28px ${cur.col}40`;
+    }
+  }
+  $('t-tog').onclick=()=>{
+    run=!run;
+    if(run)iv=setInterval(()=>{left--;if(left<=0){left=0;run=false;clearInterval(iv);iv=null;if(mode==='study'){sess++;focMin+=25;}renderSess();}ui();},1000);
+    else{clearInterval(iv);iv=null;}
+    ui();
+  };
+  $('t-reset').onclick=()=>{run=false;clearInterval(iv);iv=null;left=M[mode].dur;ui();};
+  $('t-skip').onclick=()=>{
+    run=false;clearInterval(iv);iv=null;
+    if(mode==='study'){sess++;focMin+=Math.round((M.study.dur-left)/60);}
+    left=0;ui();renderSess();
+    setTimeout(()=>{left=M[mode].dur;ui();},500);
+  };
+  document.querySelectorAll('.ttab').forEach(tab=>{
+    tab.onclick=()=>{
+      run=false;clearInterval(iv);iv=null;
+      mode=tab.dataset.mode; left=parseInt(tab.dataset.dur);
+      document.querySelectorAll('.ttab').forEach(t=>{t.classList.remove('on');t.style.color='#4B5563';t.style.background='transparent';t.style.boxShadow='none';});
+      tab.classList.add('on'); tab.style.color=M[mode].col; tab.style.background='#0F1520'; tab.style.boxShadow='0 0 0 1px #1A2535';
+      theme(M[mode].col,M[mode].rgb); renderSess(); ui();
+    };
+  });
+  theme(M.study.col,M.study.rgb); renderSess(); ui();
+})();
+
+/* ═══ HEATMAP ═══ */
+(function(){
+  const data=MOCK.heatmap;
+  const tip=$('hm-tip');
+  let curWeeks=26;
+
+  function hCol(n,max){
+    if(!n)return'#0C1018';const t=n/max;
+    if(t<.15)return'#134e4a';if(t<.35)return'#0f766e';if(t<.55)return'#0d9488';if(t<.75)return'#14B8A6';return'#5eead4';
+  }
+
+  function buildStats(){
+    const vals=Object.values(data);
+    const total=vals.reduce((a,b)=>a+b,0), active=vals.filter(v=>v>0).length, best=Math.max(...vals);
+    let lg=0,cur=0; Object.keys(data).sort().forEach(k=>{if(data[k]>0){cur++;lg=Math.max(lg,cur);}else cur=0;});
+    const items=[{l:'Total questions',v:total,c:'#14B8A6'},{l:'Active days',v:active,c:'#3B82F6'},{l:'Longest streak',v:`${lg} days`,c:'#F59E0B'},{l:'Best single day',v:`${best} Qs`,c:'#8B5CF6'}];
+    $('hm-stats').innerHTML=items.map(({l,v,c})=>`<div style="background:#131B28;border:1px solid #1A2535;border-radius:12px;padding:14px 16px;border-top:2px solid ${c}"><div style="font-size:10px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">${l}</div><div class="mono" style="font-size:20px;font-weight:500;color:${c}">${typeof v==='number'?v.toLocaleString():v}</div></div>`).join('');
+  }
+
+  function buildGrid(weeks){
+    const grid=$('hm-grid'), mbar=$('hm-months');
+    grid.innerHTML=''; mbar.innerHTML='';
+    const start=new Date(today); start.setDate(today.getDate()-(weeks*7)-today.getDay());
+    const max=Math.max(...Object.values(data),1);
+    const ws=[];
+    for(let w=0;w<weeks;w++){const wk=[];for(let d=0;d<7;d++){const dt=new Date(start);dt.setDate(start.getDate()+w*7+d);if(dt<=today){const k=dt.toISOString().slice(0,10);wk.push({dt,k,n:data[k]||0});}else wk.push(null);}ws.push(wk);}
+    let lastM=-1;
+    ws.forEach((wk,wi)=>{const f=wk.find(c=>c);if(!f)return;const m=f.dt.getMonth();if(m!==lastM){lastM=m;const l=document.createElement('div');l.style.cssText=`position:absolute;left:${(wi/weeks)*100}%;font-size:9px;color:#374151;font-weight:600;letter-spacing:.05em;text-transform:uppercase`;l.textContent=MN[m];mbar.appendChild(l);}});
+    ws.forEach((wk,wi)=>{
+      const col=document.createElement('div'); col.style.cssText='display:flex;flex-direction:column;gap:3px;flex:1;min-width:0';
+      wk.forEach(day=>{
+        const cell=document.createElement('div'); cell.className='hcell';
+        cell.style.background=day?hCol(day.n,max):'transparent';
+        if(day){
+          if(day.dt.toDateString()===today.toDateString())cell.style.outline='2px solid #14B8A6';
+          cell.onmouseenter=e=>{
+            cell.style.outlineColor='rgba(255,255,255,0.4)';
+            tip.style.opacity='1';
+            tip.innerHTML=`<span style="color:#6B7280;font-size:11px">${DAYS[day.dt.getDay()]}, ${MONTHS[day.dt.getMonth()]} ${day.dt.getDate()}</span><span class="mono" style="font-size:13px;color:${day.n>0?'#14B8A6':'#374151'};font-weight:700;margin-left:10px">${day.n} questions</span>`;
+            moveTooltip(e);
+          };
+          cell.onmousemove=e=>moveTooltip(e);
+          cell.onmouseleave=()=>{if(day.dt.toDateString()!==today.toDateString())cell.style.outlineColor='transparent';tip.style.opacity='0';};
+        }
+        col.appendChild(cell);
+      });
+      grid.appendChild(col);
+      // staggered entrance
+      col.querySelectorAll('.hcell').forEach((c,i)=>{
+        c.style.opacity='0';c.style.transform='scale(.2)';
+        setTimeout(()=>{c.style.transition='opacity .2s,transform .25s cubic-bezier(.22,1,.36,1)';c.style.opacity='1';c.style.transform='scale(1)';},wi*10+i*2);
+      });
+    });
+  }
+
+  function moveTooltip(e){
+    const tt=$('tooltip'), x=e.clientX, y=e.clientY;
+    const tw=tt.offsetWidth, th=tt.offsetHeight, vw=window.innerWidth, vh=window.innerHeight;
+    tt.style.left=(x+14+tw>vw?x-tw-10:x+14)+'px'; tt.style.top=(y+20+th>vh?y-th-10:y+20)+'px';
+    tt.classList.add('show'); tt.innerHTML=$('hm-tip').innerHTML;
+  }
+  document.addEventListener('mousemove',e=>{if(!$('hm-tip').style.opacity||$('hm-tip').style.opacity==='0')$('tooltip').classList.remove('show');});
+
+  function buildMBreakdown(){
+    const el=$('hm-months-breakdown'); el.innerHTML='';
+    const cols=['#14B8A6','#3B82F6','#8B5CF6','#F59E0B','#F43F5E','#10B981'];
+    for(let i=5;i>=0;i--){
+      const dt=new Date(today.getFullYear(),today.getMonth()-i,1);
+      const y=dt.getFullYear(),m=dt.getMonth(),days=new Date(y,m+1,0).getDate();
+      let tot=0; for(let d=1;d<=days;d++){const k=new Date(y,m,d).toISOString().slice(0,10);tot+=data[k]||0;}
+      const col=cols[5-i],fill=Math.min(tot/(days*25),1);
+      const c=document.createElement('div'); c.className='mb-c';
+      c.style.setProperty('--mc',col); c.style.setProperty('--mf','0');
+      c.innerHTML=`<div style="font-size:10px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">${MN[m]}</div><div class="mono" style="font-size:18px;font-weight:700;color:#F0F2F5">${tot}</div><div style="font-size:9px;color:#374151;margin-top:3px">${days} days</div>`;
+      el.appendChild(c);
+      setTimeout(()=>c.style.setProperty('--mf',fill.toFixed(2)),300+(5-i)*50);
+    }
+  }
+
+  document.querySelectorAll('.ht-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.ht-btn').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
+      curWeeks=parseInt(btn.dataset.w);
+      $('hm-grid').style.opacity='.3'; setTimeout(()=>{buildGrid(curWeeks);$('hm-grid').style.opacity='1';},200);
+    };
+  });
+
+  buildStats(); buildGrid(26); buildMBreakdown();
+})();
+
+/* ═══ ACCURACY CHART ═══ */
+let accChart, accSubj='math';
+(function(){
+  const ctx=$('acc-chart').getContext('2d');
+  accChart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6','Day 7'],
+      datasets:[{data:[],borderColor:'#14B8A6',backgroundColor:'rgba(20,184,166,0.08)',fill:true,tension:.45,pointBackgroundColor:'#14B8A6',pointRadius:3,pointHoverRadius:5}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:600,easing:'easeOutCubic'},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#0D1118',borderColor:'#1E2D44',borderWidth:1,titleColor:'#6B7280',bodyColor:'#F0F2F5'}},
+      scales:{
+        x:{ticks:{color:'#374151',font:{family:'Outfit',size:10}},grid:{color:'rgba(255,255,255,0.03)'}},
+        y:{min:0,max:100,ticks:{color:'#374151',font:{family:'JetBrains Mono',size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.04)'}},
+      }
+    }
+  });
+
+  function populateTopics(){
+    const sel=$('acc-topic-sel'); sel.innerHTML='';
+    Object.keys(MOCK.accuracy[accSubj]).forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+  }
+  function updateAcc(){
+    const topic=$('acc-topic-sel').value, data=MOCK.accuracy[accSubj][topic];
+    if(!data)return;
+    accChart.data.datasets[0].data=data; accChart.update();
+    const curr=data[data.length-1],best=Math.max(...data),avg=Math.round(data.reduce((a,b)=>a+b)/data.length);
+    $('acc-curr').textContent=curr+'%'; $('acc-best').textContent=best+'%'; $('acc-avg').textContent=avg+'%';
+  }
+  document.querySelectorAll('#acc-subj-btns .cf-btn').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('#acc-subj-btns .cf-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+      accSubj=b.dataset.s; populateTopics(); updateAcc();
+    };
+  });
+  $('acc-topic-sel').onchange=updateAcc;
+  populateTopics(); updateAcc();
+})();
+
+/* ═══ SPIDER CHART ═══ */
+let spChart, spSubj='math';
+(function(){
+  const ctx=$('sp-chart').getContext('2d');
+  const d=MOCK.spider[spSubj];
+  spChart=new Chart(ctx,{
+    type:'radar',
+    data:{
+      labels:d.labels,
+      datasets:[{data:d.data,backgroundColor:'rgba(20,184,166,0.12)',borderColor:'#14B8A6',borderWidth:2,pointBackgroundColor:'#14B8A6',pointRadius:3,pointHoverRadius:5}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeOutCubic'},
+      plugins:{legend:{display:false}},
+      scales:{r:{
+        angleLines:{color:'rgba(255,255,255,0.05)'},
+        grid:{color:'rgba(255,255,255,0.06)'},
+        pointLabels:{color:'#6B7280',font:{family:'Outfit',size:10}},
+        ticks:{display:false,backdropColor:'transparent'},
+        suggestedMin:0,suggestedMax:100,
+      }}
+    }
+  });
+
+  function updateSpider(){
+    const db=MOCK.spider[spSubj];
+    spChart.data.labels=db.labels; spChart.data.datasets[0].data=db.data; spChart.update();
+    let weak='',strong='';
+    db.labels.forEach((lbl,i)=>{
+      const v=db.data[i];
+      const colW='#F43F5E',colS='#14B8A6';
+      if(v<50)weak+=`<div class="tl-item"><span style="color:#8892A4">${lbl}</span><span style="color:${colW};font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">${v}%</span></div>`;
+      if(v>=70)strong+=`<div class="tl-item"><span style="color:#8892A4">${lbl}</span><span style="color:${colS};font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">${v}%</span></div>`;
+    });
+    $('sp-weak').innerHTML=weak||`<div style="font-size:12px;color:#374151">None 🎉</div>`;
+    $('sp-strong').innerHTML=strong||`<div style="font-size:12px;color:#374151">Keep practising</div>`;
+  }
+
+  document.querySelectorAll('#sp-subj-btns .cf-btn').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('#sp-subj-btns .cf-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+      spSubj=b.dataset.s; updateSpider();
+    };
+  });
+  updateSpider();
+})();
+
+/* ═══ CHART RESIZE ON PAIR EXPAND ═══ */
+const ro=new ResizeObserver(()=>{if(accChart)accChart.resize();if(spChart)spChart.resize();});
+ro.observe($('accuracy-card')); ro.observe($('spider-card'));
+</script>
+<script src="https://replit-cdn.com/replit-pill/replit-pill.global.js" data-repl-id="55043965-2b55-4682-b496-da2a6e03090c"></script></body>
+</html>
