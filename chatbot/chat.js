@@ -134,3 +134,55 @@ Stay academic. Be concise. End with a follow-up.`;
                 </div>
                 <span class="b-time">${now()}</span>`;
         }
+async function send(txt) {
+  const inp = document.getElementById('inp');
+  const msg = (txt ?? inp.value).trim();
+  if (!msg || busy) return;
+
+  document.getElementById('suggWrap').style.display = 'none';
+
+  inp.value = '';
+  resize(inp);
+
+  addMsg('user', msg);
+  history.push({ role: 'user', parts: [{ text: msg }] });
+
+  busy = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  showTyping();
+
+  try {
+    const res = await fetch("http://localhost:3000/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ history })
+    });
+
+    const data = await res.json();
+    hideTyping();
+
+    const reply = data.reply;
+
+    history.push({ role: 'model', parts: [{ text: reply }] });
+
+    const bubble = addMsg('ai', '');
+    await typeText(bubble, reply);
+
+  } catch (err) {
+    hideTyping();
+    history.pop();
+    addMsg('ai', 'Connection issue — please try again.');
+    console.error(err);
+  }
+
+  busy = false;
+  document.getElementById('sendBtn').disabled = false;
+  inp.focus();
+}
+
+function useSugg(btn) {
+  send(btn.textContent.replace(/^\S+\s/, '').trim());
+}
