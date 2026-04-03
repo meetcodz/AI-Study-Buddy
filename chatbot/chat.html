@@ -7,5 +7,65 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
 </head>
 <body>
+  
+<div class="chat-widget">
+
+  <div class="chat-header">
+    <div class="h-avatar">🎓</div>
+    <div class="h-info">
+      <div class="h-name">StudyCoach AI</div>
+      <div class="h-sub">
+        <div class="online-pill">
+          <span class="online-dot"></span>
+          <span>Online</span>
+        </div>
+        <span class="model-tag">gemini-2.5-flash</span>
+      </div>
+    </div>
+    <button class="h-btn" title="Clear chat" onclick="clearChat()">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </button>
+  </div>
+
+  <div class="msgs" id="msgs">
+    <div class="divider"><span>Today</span></div>
+    <div class="msg-group">
+      <div class="msg-row ai">
+        <div class="m-avatar">🎓</div>
+        <div class="bubble">
+          <div class="ai-label">✦ StudyCoach</div>
+          Hey! I'm your <strong>AI Study Coach</strong> — here exclusively to help you learn smarter.<br/><br/>
+          I can explain concepts, quiz you, summarise notes, build study plans, and solve problems step by step.<br/><br/>
+          What are you studying today?
+          <span class="b-time">Just now</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="sugg-wrap" id="suggWrap">
+    <div class="sugg-label">Quick actions</div>
+    <div class="sugg-row">
+      <button class="s-btn" onclick="useSugg(this)">📖 Explain a concept</button>
+      <button class="s-btn" onclick="useSugg(this)">🧠 Quiz me</button>
+      <button class="s-btn" onclick="useSugg(this)">📝 Summarise notes</button>
+      <button class="s-btn" onclick="useSugg(this)">📅 Study plan</button>
+    </div>
+  </div>
+
+  <div class="input-bar">
+    <div class="input-row">
+      <textarea id="inp" placeholder="Ask me anything academic…" rows="1"
+        onkeydown="handleKey(event)" oninput="resize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="send()">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="input-hint">Enter to send &nbsp;·&nbsp; Shift+Enter for new line</div>
+  </div>
+
+</div>
+
 </body>
 </html>
