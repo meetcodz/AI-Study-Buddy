@@ -6,6 +6,13 @@
     <title>StudyFlow</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap" rel="stylesheet">
     <style>
+    .top-right
+    {
+        position:fixed;
+        top:10px;
+        right:10px;
+        
+    }
     body{
       margin:0;
       font-family:'Outfit',sans-serif;
@@ -33,6 +40,21 @@
     <section>
         <h1 class="blue">Dashboard</h1>
         <p>Basic UI for dashboard will be added here</p>
+    </section>
+
+    <section>
+        <h1 class="blue">Daily Goal</h1>
+        <p> Daily Goals based on Question will be put here</p>
+    </section>
+
+    <section>
+        <h1 class="blue">Timer Pomodoro</h1>
+        <p>Pomodoro Based Student Timer</p>
+    </section>
+
+    <section>
+        <h1 class="blue">Heatmap</h1>
+        <p> Heatmap of the user will be shown</p>
     </section>
 </body>
 </html>
