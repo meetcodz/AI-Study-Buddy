@@ -1,0 +1,155 @@
+"""
+quiz/services.py
+
+Analysis Engine — pure Python business logic, no HTTP concerns.
+Keeps views thin and logic testable in isolation.
+"""
+
+from collections import defaultdict
+from django.db.models import QuerySet
+from .models import Attempt, UserProfile
+
+
+# ─── Constants ────────────────────────────────────────────────────────────────
+
+WEAK_TOPIC_THRESHOLD = 50.0    # accuracy % below this → weak
+STRONG_TOPIC_THRESHOLD = 75.0  # accuracy % above this → strong
+
+
+# ─── Core Analysis Function ───────────────────────────────────────────────────
+
+def compute_analysis(user) -> dict:
+    """
+    Computes full learning analytics for a given user.
+
+    Returns a dict with:
+        - total_attempted
+        - total_correct
+        - overall_accuracy  (0–100, rounded to 2 dp)
+        - avg_time_per_question  (seconds, rounded to 2 dp)
+        - topic_performance  (list of per-topic dicts)
+        - weak_topics        (list of topic names)
+        - strong_topics      (list of topic names)
+
+    Also updates the user's UserProfile in-place.
+
+    Edge cases handled:
+        - User has zero attempts  → returns zeros, empty lists
+        - Topic has no correct    → accuracy is 0.0
+    """
+
+    attempts: QuerySet = (
+        Attempt.objects
+        .filter(user=user)
+        .select_related('question')
+    )
+
+    # ── Guard: no attempts yet ─────────────────────────────────────────────────
+    if not attempts.exists():
+        return _empty_analysis()
+
+    # ── Aggregate global stats ─────────────────────────────────────────────────
+    total_attempted = attempts.count()
+    total_correct = attempts.filter(is_correct=True).count()
+    total_time = sum(a.time_taken for a in attempts)
+
+    overall_accuracy = round((total_correct / total_attempted) * 100, 2)
+    avg_time = round(total_time / total_attempted, 2)
+
+    # ── Aggregate per-topic stats ──────────────────────────────────────────────
+    # Using defaultdict to bucket attempts by topic
+    topic_buckets: dict[str, dict] = defaultdict(lambda: {
+        'total': 0, 'correct': 0, 'time_sum': 0
+    })
+
+    for attempt in attempts:
+        topic = attempt.question.topic
+        topic_buckets[topic]['total'] += 1
+        topic_buckets[topic]['time_sum'] += attempt.time_taken
+        if attempt.is_correct:
+            topic_buckets[topic]['correct'] += 1
+
+    topic_performance = []
+    weak_topics = []
+    strong_topics = []
+
+    for topic, stats in topic_buckets.items():
+        t_total = stats['total']
+        t_correct = stats['correct']
+        t_accuracy = round((t_correct / t_total) * 100, 2)
+        t_avg_time = round(stats['time_sum'] / t_total, 2)
+
+        topic_performance.append({
+            'topic': topic,
+            'total': t_total,
+            'correct': t_correct,
+            'accuracy': t_accuracy,
+            'avg_time': t_avg_time,
+        })
+
+        # Classify topic strength
+        if t_accuracy < WEAK_TOPIC_THRESHOLD:
+            weak_topics.append(topic)
+        elif t_accuracy > STRONG_TOPIC_THRESHOLD:
+            strong_topics.append(topic)
+
+    # Sort topic list by accuracy ascending (weakest first)
+    topic_performance.sort(key=lambda x: x['accuracy'])
+
+    # ── Persist to UserProfile ─────────────────────────────────────────────────
+    _update_user_profile(user, overall_accuracy, avg_time, weak_topics, strong_topics)
+
+    return {
+        'total_attempted': total_attempted,
+        'total_correct': total_correct,
+        'overall_accuracy': overall_accuracy,
+        'avg_time_per_question': avg_time,
+        'topic_performance': topic_performance,
+        'weak_topics': weak_topics,
+        'strong_topics': strong_topics,
+    }
+
+
+# ─── Profile Update Helper ────────────────────────────────────────────────────
+
+def _update_user_profile(user, accuracy, avg_time, weak_topics, strong_topics):
+    """
+    Creates or updates the UserProfile with fresh analytics data.
+    Uses get_or_create so this is safe even if the profile doesn't exist yet.
+    """
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    profile.accuracy = accuracy
+    profile.avg_time = avg_time
+    profile.weak_topics = weak_topics
+    profile.strong_topics = strong_topics
+    profile.save(update_fields=['accuracy', 'avg_time', 'weak_topics', 'strong_topics', 'updated_at'])
+
+
+# ─── Empty Result Helper ──────────────────────────────────────────────────────
+
+def _empty_analysis() -> dict:
+    """Returns a safe zero-state dict when the user has no attempts."""
+    return {
+        'total_attempted': 0,
+        'total_correct': 0,
+        'overall_accuracy': 0.0,
+        'avg_time_per_question': 0.0,
+        'topic_performance': [],
+        'weak_topics': [],
+        'strong_topics': [],
+    }
+
+
+# ─── Bookmark Helper ──────────────────────────────────────────────────────────
+
+def get_bookmarked_attempts(user) -> QuerySet:
+    """
+    Returns all bookmarked Attempt objects for a user,
+    with the related Question pre-fetched.
+    """
+    return (
+        Attempt.objects
+        .filter(user=user, bookmarked=True)
+        .select_related('question')
+        .order_by('-created_at')
+    )
