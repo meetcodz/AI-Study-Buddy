@@ -186,3 +186,20 @@ async function send(txt) {
 function useSugg(btn) {
   send(btn.textContent.replace(/^\S+\s/, '').trim());
 }
+function clearChat() {
+  history = [];
+  const C = document.getElementById('msgs');
+  C.innerHTML = `
+    <div class="divider"><span>Today</span></div>
+    <div class="msg-group">
+      <div class="msg-row ai">
+        <div class="m-avatar">🎓</div>
+        <div class="bubble">
+          <div class="ai-label">✦ StudyCoach</div>
+          Fresh start — what are you studying?
+          <span class="b-time">${now()}</span>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('suggWrap').style.display = 'block';
+}
