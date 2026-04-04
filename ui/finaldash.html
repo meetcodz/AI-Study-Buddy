@@ -91,22 +91,135 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
 .hero-chip-dot{width:6px;height:6px;border-radius:50%;background:#3B82F6;animation:pulse 2s ease-in-out infinite}
 
 #clock{
-  font-size:clamp(72px,14vw,150px);font-weight:900;
-  letter-spacing:-0.05em;line-height:1;
+  display:flex;align-items:flex-end;justify-content:center;gap:0;
+  opacity:0;animation:aScale .9s .22s cubic-bezier(.22,1,.36,1) forwards;
+  line-height:1;
+}
+.cd-seg{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.cd-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(52px,9.5vw,112px);
+  font-weight:900;
+  letter-spacing:-0.04em;
+  line-height:1;
   font-variant-numeric:tabular-nums;
   background:linear-gradient(160deg,#e3e6ea 20%,#c6cace 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  opacity:0;animation:aScale .9s .22s cubic-bezier(.22,1,.36,1) forwards;
+  display:inline-block;
+  transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .3s;
 }
-.dg{display:inline-block;transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .3s}
-.sep{background:linear-gradient(160deg,#1E3A5F,#2a4f80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:blink 1s step-end infinite;margin:0 3px}
+.cd-num.bounce{
+  transform:translateY(-10px);opacity:.3;
+}
+.cd-lbl{
+  font-family:'Outfit',sans-serif;
+  font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:#1E3054;
+  margin-top:-4px;
+}
+.cd-sep{
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(40px,7vw,88px);
+  font-weight:300;
+  background:linear-gradient(160deg,#1E3A5F,#2a4f80);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin:0 6px;padding-bottom:20px;
+  line-height:1;
+}
+.chip-edit-btn{
+  background:transparent;border:none;cursor:pointer;
+  color:#3B82F6;font-size:14px;padding:2px 4px;margin-left:4px;
+  border-radius:4px;opacity:.7;transition:opacity .2s;
+  display:inline-flex;align-items:center;
+}
+.chip-edit-btn:hover{opacity:1}
+#goal-name-badge{
+  background:rgba(20,184,166,0.1);
+  border:1px solid rgba(20,184,166,0.25);
+  border-radius:7px;padding:4px 13px;
+  font-size:12px;font-weight:700;letter-spacing:.1em;
+  color:#14B8A6;font-family:'Outfit',sans-serif;
+  text-transform:uppercase;
+}
+.progress-ring-label{
+  font-size:10px;color:#1E3054;letter-spacing:.13em;
+  text-transform:uppercase;text-align:center;margin-top:8px;
+  font-weight:700;font-family:'Outfit',sans-serif;
+}
+
+/* ═══════ MODAL ═══════ */
+#goal-modal-overlay{
+  position:fixed;inset:0;z-index:2000;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(5,7,12,0.75);backdrop-filter:blur(10px);
+  opacity:0;pointer-events:none;
+  transition:opacity .35s cubic-bezier(.22,1,.36,1);
+}
+#goal-modal-overlay.open{opacity:1;pointer-events:all}
+#goal-modal{
+  background:#0F1520;border:1px solid #1E2D44;border-radius:22px;
+  padding:36px 32px;width:100%;max-width:420px;
+  position:relative;
+  transform:translateY(20px) scale(.97);
+  transition:transform .4s cubic-bezier(.22,1,.36,1);
+}
+#goal-modal-overlay.open #goal-modal{transform:translateY(0) scale(1)}
+.modal-title{
+  font-size:18px;font-weight:800;color:#F0F2F5;letter-spacing:-0.03em;
+  margin-bottom:6px;font-family:'Outfit',sans-serif;
+}
+.modal-sub{font-size:12px;color:#3B82F6;margin-bottom:28px;font-family:'Outfit',sans-serif}
+.modal-label{
+  font-size:10px;font-weight:700;color:#3B82F6;
+  text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:7px;display:block;font-family:'Outfit',sans-serif;
+}
+.modal-input{
+  width:100%;background:#070B11;
+  border:1px solid #1E2D44;border-radius:10px;
+  padding:13px 16px;color:#F0F2F5;font-size:14px;
+  font-family:'Outfit',sans-serif;outline:none;
+  transition:border-color .2s;margin-bottom:20px;
+}
+.modal-input:focus{border-color:#14B8A6}
+.modal-input[type=date]{color-scheme:dark}
+.modal-input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) saturate(3) hue-rotate(170deg);cursor:pointer}
+.modal-row{display:flex;gap:10px}
+.modal-save{
+  flex:1;height:44px;background:#14B8A6;color:#0A0C12;
+  border:none;border-radius:11px;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:'Outfit',sans-serif;
+  transition:all .2s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 4px 24px rgba(20,184,166,0.3);
+}
+.modal-save:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.modal-cancel{
+  height:44px;padding:0 20px;background:#131B28;color:#3B82F6;
+  border:1px solid #1E2D44;border-radius:11px;font-size:14px;font-weight:600;
+  cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;
+}
+.modal-cancel:hover{border-color:#3B82F6}
+.modal-close{
+  position:absolute;top:18px;right:20px;
+  background:transparent;border:none;cursor:pointer;
+  color:#1E3054;font-size:20px;line-height:1;
+  transition:color .2s;padding:4px;
+}
+.modal-close:hover{color:#3B82F6}
+.modal-preview{
+  background:#070B11;border:1px solid #1A2535;border-radius:10px;
+  padding:12px 16px;margin-bottom:20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-preview-label{font-size:10px;color:#3B82F6;font-weight:600;text-transform:uppercase;letter-spacing:.09em;font-family:'Outfit',sans-serif}
+.modal-preview-val{font-family:'JetBrains Mono',monospace;font-size:18px;color:#14B8A6;font-weight:500}
 
 .ist-row{
   display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;
   opacity:0;animation:aUp .9s .42s cubic-bezier(.22,1,.36,1) forwards;
 }
-.ist-badge{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.18);border-radius:7px;padding:4px 11px;font-size:12px;font-weight:700;letter-spacing:.1em;color:#3B82F6}
-#hero-date{font-size:14px;color:#4B5563;font-weight:500}
 
 .sec-track{
   margin-top:30px;
@@ -349,8 +462,15 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
     <div class="nav-btn" title="Analyse"><i data-lucide="bar-chart-3"></i></div>
     <div class="nav-btn" title="Questions"><i data-lucide="layers"></i></div>
   </div>
-  <div class="profile-btn" title="Profile">
+  <div class="profile-btn" id="profile-btn" title="Profile">
     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #4B5563;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+  </div>
+  <div id="auth-dropdown" style="position:absolute; top:65px; right:32px; background:#131B28; border:1px solid #1A2535; padding:16px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s; transform:translateY(-10px); box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:2000; min-width:200px;">
+    <div style="font-size:10px; font-weight:700; color:#4B5563; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px">Logged in as</div>
+    <div id="auth-user-disp" style="font-size:15px; font-weight:600; color:#F0F2F5; margin-bottom:16px; word-break:break-all;">User</div>
+    <button id="logout-btn" style="width:100%; background:rgba(244,63,94,0.1); color:#F43F5E; border:1px solid rgba(244,63,94,0.25); border-radius:8px; padding:10px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; transition:all 0.2s;">
+      Log Out
+    </button>
   </div>
 </nav>
 
@@ -364,17 +484,41 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
   <canvas id="particle-canvas"></canvas>
   <div id="hero-glow"></div>
   <div class="hero-inner">
-    <div class="hero-chip"><div class="hero-chip-dot"></div>Indian Standard Time &nbsp;·&nbsp; UTC +5:30</div>
-    <div id="clock" class="mono">
-      <span class="dg" id="dg-h"><span id="ch">00</span></span><span class="sep">:</span><span class="dg" id="dg-m"><span id="cm">00</span></span><span class="sep">:</span><span class="dg" id="dg-s"><span id="cs">00</span></span>
+    <div class="hero-chip">
+      <div class="hero-chip-dot"></div>
+      <span id="chip-text">TIME UNTIL &nbsp;·&nbsp; JEE MAINS 2027</span>
+      <button class="chip-edit-btn" id="open-modal-btn" title="Edit goal">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+    </div>
+    <div id="clock">
+      <div class="cd-seg">
+        <span class="cd-num" id="cd-days">00</span>
+        <div class="cd-lbl">Days</div>
+      </div>
+      <div class="cd-sep">:</div>
+      <div class="cd-seg">
+        <span class="cd-num" id="cd-hrs">00</span>
+        <div class="cd-lbl">Hours</div>
+      </div>
+      <div class="cd-sep">:</div>
+      <div class="cd-seg">
+        <span class="cd-num" id="cd-min">00</span>
+        <div class="cd-lbl">Minutes</div>
+      </div>
+      <div class="cd-sep">:</div>
+      <div class="cd-seg">
+        <span class="cd-num" id="cd-sec">00</span>
+        <div class="cd-lbl">Seconds</div>
+      </div>
     </div>
     <div class="ist-row">
-      <div class="ist-badge">IST</div>
-      <div id="hero-date" style="font-size:14px;color:#4B5563;font-weight:500"></div>
+      <div id="goal-name-badge">JEE Mains 2027</div>
+      <div id="hero-date" style="font-size:14px;color:#3B82F6;font-weight:500;font-family:'Outfit',sans-serif"></div>
     </div>
     <div class="sec-track">
       <div class="sec-track-bg"><div id="sec-fill"></div></div>
-      <div class="sec-lbl">seconds in current minute</div>
+      <div class="sec-lbl" id="prog-lbl">calculating time elapsed...</div>
     </div>
   </div>
   <div class="scroll-cue" onclick="document.getElementById('sec1').scrollIntoView({behavior:'smooth'})">
@@ -616,9 +760,9 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
           <canvas id="sp-chart"></canvas>
         </div>
         <div>
-          <div style="font-size:10px;font-weight:700;color:#F43F5E;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px">⚡ Weak chapters</div>
+          <div style="font-size:10px;font-weight:700;color:#F43F5E;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px"> Weak chapters</div>
           <div class="topic-list" id="sp-weak" style="margin-bottom:16px"></div>
-          <div style="font-size:10px;font-weight:700;color:#14B8A6;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px">✦ Strong chapters</div>
+          <div style="font-size:10px;font-weight:700;color:#14B8A6;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px"> Strong chapters</div>
           <div class="topic-list" id="sp-strong"></div>
         </div>
       </div>
@@ -626,6 +770,35 @@ body{background:#0A0C12;color:#F0F2F5;font-family:'Outfit',sans-serif;overflow-x
 
   </div>
 </section>
+
+<div id="goal-modal-overlay">
+  <div id="goal-modal">
+    <button class="modal-close" id="close-modal-btn">✕</button>
+    <div class="modal-title">Set your exam goal</div>
+    <div class="modal-sub">The countdown will update live as you type</div>
+
+    <label class="modal-label" for="modal-name">Goal name</label>
+    <input class="modal-input" id="modal-name" type="text" placeholder="e.g. JEE Mains 2027, NEET 2027..." maxlength="40" value="JEE Mains 2027"/>
+
+    <label class="modal-label" for="modal-date">Target date</label>
+    <input class="modal-input" id="modal-date" type="date" value="2027-01-22"/>
+
+    <div class="modal-preview">
+      <div>
+        <div class="modal-preview-label">Live countdown preview</div>
+        <div class="modal-preview-val" id="modal-preview-val">— — —</div>
+      </div>
+      <div style="font-size:11px;color:#1E3054;text-align:right;font-family:'Outfit',sans-serif;font-weight:600">
+        Time until<br><span id="modal-preview-name" style="color:#3B82F6">JEE Mains 2027</span>
+      </div>
+    </div>
+
+    <div class="modal-row">
+      <button class="modal-save" id="modal-save-btn">Save Goal</button>
+      <button class="modal-cancel" id="modal-cancel-btn">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
 
@@ -708,23 +881,119 @@ const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturda
 })();
 
 
+
 (function(){
-  let ph=-1,pm=-1,ps=-1;
-  function bounce(id){
-    const el=$(id); el.style.transition='none'; el.style.transform='translateY(-8px)'; el.style.opacity='.3';
-    setTimeout(()=>{el.style.transition='transform .35s cubic-bezier(.22,1,.36,1),opacity .3s';el.style.transform='';el.style.opacity='';},16);
+  let goalName = 'JEE Mains 2027';
+  let goalDate = new Date('2027-01-22T00:00:00');
+  let prev = { d:-1, h:-1, m:-1, s:-1 };
+
+  function bounce(el){
+    el.classList.remove('bounce');
+    void el.offsetWidth;
+    el.classList.add('bounce');
+    setTimeout(()=>{
+      el.style.transition='transform .38s cubic-bezier(.22,1,.36,1),opacity .35s';
+      el.classList.remove('bounce');
+    }, 30);
   }
+
+  function fmtDate(d){
+    return `${d.getDate()} ${MN[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
   function tick(){
-    const now=new Date();
-    const ist=new Date(now.getTime()+5.5*3600000+now.getTimezoneOffset()*60000);
-    const h=ist.getHours(),m=ist.getMinutes(),s=ist.getSeconds();
-    if(h!==ph){$('ch').textContent=pad(h);bounce('dg-h');ph=h;}
-    if(m!==pm){$('cm').textContent=pad(m);bounce('dg-m');pm=m;}
-    if(s!==ps){$('cs').textContent=pad(s);bounce('dg-s');ps=s;}
-    $('sec-fill').style.width=(s/59*100)+'%';
-    $('hero-date').textContent=`${DAYS[ist.getDay()]}, ${MONTHS[ist.getMonth()]} ${ist.getDate()}, ${ist.getFullYear()}`;
+    const now = new Date();
+    const diff = goalDate - now;
+
+    if(diff <= 0){
+      ['cd-days','cd-hrs','cd-min','cd-sec'].forEach(id=>$(id).textContent='00');
+      $('hero-date').textContent = 'Goal date reached!';
+      $('sec-fill').style.width = '100%';
+      $('prog-lbl').textContent = '🎉 Exam day!';
+      return;
+    }
+
+    const totalSec = Math.floor(diff / 1000);
+    const d = Math.floor(totalSec / 86400);
+    const h = Math.floor((totalSec % 86400) / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+
+    const ds = pad(d), hs = pad(h), ms = pad(m), ss = pad(s);
+
+    if(d !== prev.d){ $('cd-days').textContent=ds; bounce($('cd-days')); prev.d=d; }
+    if(h !== prev.h){ $('cd-hrs').textContent=hs;  bounce($('cd-hrs'));  prev.h=h; }
+    if(m !== prev.m){ $('cd-min').textContent=ms;  bounce($('cd-min'));  prev.m=m; }
+    if(s !== prev.s){ $('cd-sec').textContent=ss;  bounce($('cd-sec'));  prev.s=s; }
+
+    $('hero-date').textContent = `Target · ${fmtDate(goalDate)}`;
+
+    const startRef = new Date(goalDate);
+    startRef.setFullYear(startRef.getFullYear() - 1);
+    const total = goalDate - startRef;
+    const elapsed = now - startRef;
+    const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+    $('sec-fill').style.width = pct.toFixed(1) + '%';
+
+    const daysLeft = Math.ceil(diff / 86400000);
+    $('prog-lbl').textContent = `${daysLeft} days remaining · ${pct.toFixed(0)}% of your prep window elapsed`;
   }
-  tick(); setInterval(tick,1000);
+
+  function applyGoal(){
+    $('chip-text').textContent = `TIME UNTIL  ·  ${goalName.toUpperCase()}`;
+    $('goal-name-badge').textContent = goalName;
+    prev = { d:-1, h:-1, m:-1, s:-1 };
+    tick();
+  }
+
+  tick();
+  setInterval(tick, 1000);
+
+  /* ── MODAL ── */
+  const overlay   = $('goal-modal-overlay');
+  const nameInp   = $('modal-name');
+  const dateInp   = $('modal-date');
+  const previewVal = $('modal-preview-val');
+  const previewName= $('modal-preview-name');
+
+  function calcPreview(){
+    const gd = new Date(dateInp.value + 'T00:00:00');
+    const diff = gd - new Date();
+    if(isNaN(gd)||diff<=0){ previewVal.textContent='Date passed'; return; }
+    const ts=Math.floor(diff/1000);
+    const d=Math.floor(ts/86400), h=Math.floor((ts%86400)/3600), m=Math.floor((ts%3600)/60);
+    previewVal.textContent = `${pad(d)}d ${pad(h)}h ${pad(m)}m`;
+    previewName.textContent = nameInp.value || 'Your Goal';
+  }
+
+  function openModal(){
+    nameInp.value = goalName;
+    dateInp.value = goalDate.toISOString().slice(0,10);
+    calcPreview();
+    overlay.classList.add('open');
+    setTimeout(()=>nameInp.focus(),300);
+  }
+  function closeModal(){ overlay.classList.remove('open'); }
+  function saveModal(){
+    const name = nameInp.value.trim();
+    const date = new Date(dateInp.value + 'T00:00:00');
+    if(!name || isNaN(date) || date <= new Date()){ return; }
+    goalName = name;
+    goalDate = date;
+    applyGoal();
+    closeModal();
+  }
+
+  $('open-modal-btn').onclick = openModal;
+  $('close-modal-btn').onclick = closeModal;
+  $('modal-cancel-btn').onclick = closeModal;
+  $('modal-save-btn').onclick = saveModal;
+  overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
+  nameInp.addEventListener('input', calcPreview);
+  dateInp.addEventListener('input', calcPreview);
+  $('modal-save-btn').addEventListener('keydown', e=>{ if(e.key==='Enter') saveModal(); });
+
+  applyGoal();
 })();
 
 
@@ -1038,7 +1307,7 @@ let spChart, spSubj='math', spTopic='Algebra';
       if(v<50)weak+=`<div class="tl-item"><span style="color:#8892A4">${lbl}</span><span style="color:${colW};font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">${v}%</span></div>`;
       if(v>=70)strong+=`<div class="tl-item"><span style="color:#8892A4">${lbl}</span><span style="color:${colS};font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">${v}%</span></div>`;
     });
-    $('sp-weak').innerHTML=weak||`<div style="font-size:12px;color:#374151">None 🎉</div>`;
+    $('sp-weak').innerHTML=weak||`<div style="font-size:12px;color:#374151">None</div>`;
     $('sp-strong').innerHTML=strong||`<div style="font-size:12px;color:#374151">Keep practising</div>`;
   }
 
@@ -1055,5 +1324,56 @@ let spChart, spSubj='math', spTopic='Algebra';
 
 const ro=new ResizeObserver(()=>{if(accChart)accChart.resize();if(spChart)spChart.resize();});
 ro.observe($('accuracy-card')); ro.observe($('spider-card'));
+
+
+
+const authBtn = document.getElementById('profile-btn');
+const authDropdown = document.getElementById('auth-dropdown');
+const logoutBtn = document.getElementById('logout-btn');
+
+let dropdownOpen = false;
+
+if(authBtn) {
+  authBtn.onclick = (e) => {
+    e.preventDefault();
+    const status = localStorage.getItem('studyflow_auth');
+    if(status === 'logged_in') {
+      const savedUser = localStorage.getItem('studyflow_user');
+      if(savedUser) document.getElementById('auth-user-disp').textContent = savedUser;
+
+      dropdownOpen = !dropdownOpen;
+      if(dropdownOpen) {
+        authDropdown.style.opacity = '1';
+        authDropdown.style.transform = 'translateY(0)';
+        authDropdown.style.pointerEvents = 'auto';
+      } else {
+        authDropdown.style.opacity = '0';
+        authDropdown.style.transform = 'translateY(-10px)';
+        authDropdown.style.pointerEvents = 'none';
+      }
+    } else {
+      window.location.href = 'login.html';
+    }
+  };
+}
+
+if(logoutBtn) {
+  logoutBtn.onclick = () => {
+    localStorage.setItem('studyflow_auth', 'guest');
+    localStorage.removeItem('studyflow_user');
+    window.location.href = 'login.html';
+  };
+}
+
+document.addEventListener('click', (e) => {
+  if(dropdownOpen && !authBtn.contains(e.target) && !authDropdown.contains(e.target)) {
+    dropdownOpen = false;
+    authDropdown.style.opacity = '0';
+    authDropdown.style.transform = 'translateY(-10px)';
+    authDropdown.style.pointerEvents = 'none';
+  }
+});
+
 </script>
+</body>
 </html>
