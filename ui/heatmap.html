@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Activity Heatmap Console — StudyFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+  background: #0A0C12; color: #F0F2F5; font-family: 'Outfit', sans-serif; 
+  height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+.header {
+  position: fixed; top: 0; left: 0; right: 0; height: 70px;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 32px; z-index: 1000;
+  background: linear-gradient(to bottom, rgba(10,12,18,0.8), transparent);
+  backdrop-filter: blur(8px);
+}
+.back-btn {
+  display: flex; align-items: center; gap: 8px; color: #8892A4; text-decoration: none; 
+  font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.2s;
+}
+.back-btn:hover { color: #F0F2F5; }
+.back-btn svg { width: 16px; height: 16px; }
+
+.header-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+.score-badge {
+  background: rgba(20,184,166,0.1); border: 1px solid rgba(20,184,166,0.25);
+  padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; color: #14B8A6;
+  display: flex; align-items: center; gap: 6px;
+}
+
+
+.main-area {
+  display: grid; grid-template-columns: 280px 1fr 340px; flex: 1; height: 100vh; padding-top: 70px;
+}
+
+
+.left-panel {
+  border-right: 1px solid rgba(59,130,246,0.1); background: #0D1118; padding: 28px 20px;
+  display: flex; flex-direction: column; gap: 20px; overflow-y: auto;
+}
+.left-panel::-webkit-scrollbar { width: 4px; }
+.left-panel::-webkit-scrollbar-thumb { background: #1E2535; border-radius: 2px; }
+
+.nav-group-title { font-size: 10px; font-weight: 700; color: #4B5563; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px; }
+
+.streak-card {
+  background: linear-gradient(135deg, #1A1208, #111824); border: 1px solid #F59E0B40;
+  padding: 16px; border-radius: 14px; text-align: center;
+}
+.streak-card .val { font-size: 38px; font-weight: 800; color: #F59E0B; line-height: 1; margin-bottom: 4px; }
+.streak-card .lbl { font-size: 12px; font-weight: 600; color: #F59E0B90; text-transform: uppercase; letter-spacing: 0.1em; }
+
+.dt-card { background: #111824; border: 1px solid rgba(59,130,246,0.1); border-radius: 14px; padding: 16px; }
+
+.filter-btn {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; border: none; background: transparent;
+  padding: 12px 14px; border-radius: 10px; cursor: pointer; color: #8892A4; transition: all 0.2s;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; margin-bottom:6px;
+}
+.filter-btn:hover { background: rgba(255,255,255,0.03); }
+.filter-btn.active { background: rgba(20,184,166,0.1); color: #14B8A6; }
+
+
+.center-panel {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px;
+  background: radial-gradient(circle at 50% 50%, rgba(20,184,166,0.04) 0%, transparent 70%);
+}
+
+#heatmap-wrap {
+  width: 100%; max-width: 900px; padding: 30px; background: #0A0C12; border: 1px solid #1E2D44; border-radius: 20px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.5); position: relative; transition: opacity 0.4s; overflow:hidden;
+}
+
+#month-row { display: flex; gap: 0; padding-left: 30px; position: relative; height: 18px; margin-bottom:8px; }
+.month-lbl { position: absolute; font-size: 11px; color: #4B5563; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+
+#grid-row { display: flex; align-items: flex-start; }
+#day-labels { display: flex; flex-direction: column; gap: 5px; margin-right: 12px; padding-top: 3px; font-size: 10px; font-weight: 600; color: #4B5563; }
+.day-lbl { height: 14px; line-height: 14px; text-align: right; }
+
+#heat-grid { display: flex; gap: 5px; flex: 1; }
+.week-col { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+.hcell {
+  aspect-ratio: 1; border-radius: 4px; cursor: pointer; position: relative;
+  transition: transform 0.15s, outline 0.15s, filter 0.15s; outline: 2px solid transparent; outline-offset: 2px;
+}
+.hcell:hover { transform: scale(1.4); z-index: 10; outline-color: rgba(255,255,255,0.3); filter: brightness(1.2); }
+.hcell.active-cell { transform: scale(1.2); z-index: 5; outline-color: #14B8A6; }
+
+#legend { display: flex; align-items: center; justify-content: flex-end; margin-top: 24px; gap: 6px; }
+.leg-step { width: 14px; height: 14px; border-radius: 4px; }
+.leg-txt { font-size: 11px; color: #4B5563; font-weight: 600; margin: 0 4px; }
+
+
+.right-panel {
+  border-left: 1px solid rgba(59,130,246,0.1); background: #0D1118; padding: 28px 24px;
+  overflow-y: auto; display: flex; flex-direction: column; gap: 24px;
+}
+
+#unselected-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: #4B5563;
+}
+
+#detail-container { display: none; flex-direction: column; gap: 24px; animation: slideInFade 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+@keyframes slideInFade { from{ opacity:0; transform:translateX(20px); } to{ opacity:1; transform:translateX(0); } }
+
+.dt-pretitle { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; color: #14B8A6;}
+.dt-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #F0F2F5; margin-bottom: 24px;}
+
+.score-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px;}
+.score-val { font-size: 48px; font-weight: 700; color: #F0F2F5; line-height: 1;}
+
+.st-row { display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed #1E2D44; padding-bottom:12px;}
+.st-row:last-child { border:none; margin:0; padding:0;}
+
+.btn {
+  padding: 12px 16px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 14px; width:100%;
+  font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; display: flex; align-items: center; justify-content:center; gap: 8px; margin-bottom:12px;
+}
+.btn-primary { background: #14B8A6; color: #0A0C12; }
+.btn-primary:hover { background: #0D9488; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div style="display:flex; align-items:center; gap:24px;">
+    <a href="finaldash.html" class="back-btn"><i data-lucide="arrow-left"></i> Back to Dashboard</a>
+    <div style="width:1px; height:24px; background:#1E2D44;"></div>
+    <div class="header-title">Activity Matrix</div>
+  </div>
+  <div class="header-right">
+    <div class="score-badge"><i data-lucide="calendar" style="width:14px;height:14px;"></i> Visual Tracker</div>
+  </div>
+</header>
+
+<div class="main-area">
+
+ 
+  <aside class="left-panel">
+    <div class="streak-card">
+      <div class="val mono" id="cur-streak">12</div>
+      <div class="lbl">Days Streak 🔥</div>
+      <div style="font-size:11px; color:#F59E0B70; margin-top:8px;">Best: 18 days</div>
+    </div>
+
+    <div class="dt-card">
+      <div class="nav-group-title">Timeframe Filters</div>
+      <button class="filter-btn active" data-w="26">
+        <span>6 Months (26 weeks)</span> <i data-lucide="check" style="width:14px;height:14px;"></i>
+      </button>
+      <button class="filter-btn" data-w="52">
+        <span>Full Year (52 weeks)</span> <i data-lucide="check" style="width:14px;height:14px; opacity:0;"></i>
+      </button>
+    </div>
+
+    <div class="dt-card">
+      <div class="nav-group-title">Lifetime Stats</div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <span style="font-size:13px; color:#8892A4;">Total solved</span>
+        <span class="mono" style="font-weight:700; color:#14B8A6;" id="s-tot">0</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span style="font-size:13px; color:#8892A4;">Active Days</span>
+        <span class="mono" style="font-weight:700; color:#F0F2F5;" id="s-act">0</span>
+      </div>
+    </div>
+  </aside>
+
+  
+  <main class="center-panel">
+    <div id="heatmap-wrap">
+      <div id="month-row"></div>
+      <div id="grid-row">
+        <div id="day-labels">
+          <div class="day-lbl"></div>
+          <div class="day-lbl">M</div>
+          <div class="day-lbl"></div>
+          <div class="day-lbl">W</div>
+          <div class="day-lbl"></div>
+          <div class="day-lbl">F</div>
+          <div class="day-lbl"></div>
+        </div>
+        <div id="heat-grid"></div>
+      </div>
+      <div id="legend">
+        <div class="leg-txt">Less</div>
+        <div class="leg-step" style="background:#111827; border:1px solid #1A2235"></div>
+        <div class="leg-step" style="background:#134e4a"></div>
+        <div class="leg-step" style="background:#0f766e"></div>
+        <div class="leg-step" style="background:#0d9488"></div>
+        <div class="leg-step" style="background:#14B8A6"></div>
+        <div class="leg-step" style="background:#5eead4"></div>
+        <div class="leg-txt">More</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:24px; font-size:13px; color:#8892A4; display:flex; align-items:center; justify-content:center; gap:6px;">
+      <i data-lucide="mouse-pointer-click" style="width:14px;height:14px;"></i> Click any day cell to view detailed activity log
+    </div>
+  </main>
+
+  
+  <aside class="right-panel">
+    <div id="unselected-state">
+      <i data-lucide="calendar-search" style="width:32px;height:32px; margin-bottom:12px; opacity:0.5;"></i>
+      <div style="font-size:16px; font-weight:700; color:#F0F2F5; margin-bottom:6px;">No Day Selected</div>
+      <div style="font-size:12px;">Click on a cell in the matrix to view the deep dive insight for that day.</div>
+    </div>
+
+    <div id="detail-container">
+      <div class="dt-pretitle" id="dt-lbl">Analysis</div>
+      <div class="dt-title" id="dt-date">October 14th</div>
+
+      <div class="dt-card">
+        <div class="dt-card-lbl">Total Volume</div>
+        <div class="score-row">
+          <div class="score-val mono" id="dt-vol">0</div>
+          <div style="font-size:13px; font-weight:600; color:#8892A4; text-transform:uppercase;">Questions</div>
+        </div>
+      </div>
+
+      <div class="dt-card">
+        <div class="dt-card-lbl">Subject Breakdown</div>
+        <div class="st-row">
+          <span style="font-size:13px; color:#3B82F6; font-weight:600;">Math</span>
+          <span class="mono" style="font-weight:700; color:#F0F2F5;" id="db-math">0</span>
+        </div>
+        <div class="st-row">
+          <span style="font-size:13px; color:#8B5CF6; font-weight:600;">Physics</span>
+          <span class="mono" style="font-weight:700; color:#F0F2F5;" id="db-phy">0</span>
+        </div>
+        <div class="st-row">
+          <span style="font-size:13px; color:#EC4899; font-weight:600;">Chemistry</span>
+          <span class="mono" style="font-weight:700; color:#F0F2F5;" id="db-chem">0</span>
+        </div>
+      </div>
+
+      <div style="margin-top:auto;">
+        <button class="btn btn-primary"><i data-lucide="eye"></i> View Full Study Log</button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+lucide.createIcons();
+
+const DATA = {
+  heatmap: (function(){
+    const d = {};
+    const today = new Date();
+    const pat = [
+      14,18,22,16,0,8,5,   20,17,25,19,0,12,6,
+      0,15,21,18,24,0,9,   16,22,19,0,28,14,7,
+      12,0,20,23,17,11,0,  18,16,24,20,0,15,8,
+      0,22,19,26,17,0,11,  14,20,0,23,18,16,9,
+      0,17,21,24,0,19,13,  22,18,0,25,20,14,7,
+      15,0,23,21,18,0,12,  0,19,22,17,24,0,10,
+      16,21,0,25,19,15,8,  0,20,18,22,0,17,11,
+      18,14,0,21,23,16,0,  22,19,25,0,18,13,7,
+      0,16,20,24,18,0,11,  19,23,17,0,26,14,8,
+      15,0,22,20,18,14,0,  21,17,24,0,19,15,9,
+      0,18,23,21,0,17,12,  22,16,0,24,20,13,7,
+      14,19,0,23,18,16,0,  20,22,17,25,0,14,9,
+      0,18,21,24,0,19,11,  17,23,0,22,18,15,8,
+      16,0,24,20,0,18,12,  22,17,25,0,20,14,8,
+      0,19,21,18,24,0,11,  16,22,0,25,19,15,7,
+      18,14,0,22,20,17,0,  23,18,26,0,21,13,8,
+    ];
+    
+    let longPat = [];
+    for(let i=0; i<4; i++) longPat = longPat.concat(pat);
+    
+    for(let i=0;i<longPat.length;i++){
+      const dt = new Date(today);
+      dt.setDate(today.getDate() - i);
+      d[dt.toISOString().slice(0,10)] = longPat[i] || 0;
+    }
+    return d;
+  })(),
+};
+
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const today = new Date();
+
+function heatColor(n, max){
+  if(!n) return '#101622';
+  const t = n / max;
+  if(t < .15) return '#134e4a';
+  if(t < .35) return '#0f766e';
+  if(t < .55) return '#0d9488';
+  if(t < .75) return '#14B8A6';
+  return '#5eead4';
+}
+
+function buildHeatmap(numWeeks){
+  const grid = document.getElementById('heat-grid');
+  const mRow = document.getElementById('month-row');
+  grid.innerHTML = '';
+  mRow.innerHTML = '';
+
+  const start = new Date(today);
+  start.setDate(today.getDate() - (numWeeks*7) - today.getDay());
+  const max = Math.max(...Object.values(DATA.heatmap), 1);
+
+  const weeks = [];
+  for(let w=0; w<numWeeks; w++){
+    const wk=[];
+    for(let d=0; d<7; d++){
+      const dt=new Date(start);
+      dt.setDate(start.getDate()+w*7+d);
+      if(dt<=today){const k=dt.toISOString().slice(0,10); wk.push({dt,k,n:DATA.heatmap[k]||0});}
+      else wk.push(null);
+    }
+    weeks.push(wk);
+  }
+
+  let lastM=-1;
+  weeks.forEach((wk,wi)=>{
+    const f=wk.find(c=>c);
+    if(!f)return;
+    const m=f.dt.getMonth();
+    if(m!==lastM){
+      lastM=m;
+      const lbl=document.createElement('div');
+      lbl.className='month-lbl';
+      lbl.textContent=MN[m];
+      const pct=(wi/numWeeks)*100;
+      lbl.style.left=`calc(${pct}%)`;
+      mRow.appendChild(lbl);
+    }
+  });
+
+  weeks.forEach((wk,wi)=>{
+    const col=document.createElement('div');
+    col.className='week-col';
+    wk.forEach((day,di)=>{
+      const cell=document.createElement('div');
+      cell.className='hcell';
+      cell.style.background = day ? heatColor(day.n, max) : 'transparent';
+      if(!day) { cell.style.visibility = 'hidden'; }
+      
+      if(day){
+        cell.onclick = () => {
+          document.querySelectorAll('.hcell').forEach(c=>c.classList.remove('active-cell'));
+          cell.classList.add('active-cell');
+          showDetails(day);
+        };
+      }
+      col.appendChild(cell);
+    });
+    grid.appendChild(col);
+  });
+}
+
+function showDetails(day) {
+  document.getElementById('unselected-state').style.display = 'none';
+  const det = document.getElementById('detail-container');
+  det.style.display = 'flex';
+  det.style.animation = 'none';
+  det.offsetHeight; // reflow
+  det.style.animation = 'slideInFade 0.4s cubic-bezier(0.22,1,0.36,1) forwards';
+
+  const dateStr = `${DAYS[day.dt.getDay()]}, ${MONTHS[day.dt.getMonth()]} ${day.dt.getDate()}, ${day.dt.getFullYear()}`;
+  document.getElementById('dt-date').textContent = dateStr;
+  document.getElementById('dt-vol').textContent = day.n;
+
+  
+  if(day.n === 0) {
+    document.getElementById('db-math').textContent = 0; document.getElementById('db-phy').textContent = 0; document.getElementById('db-chem').textContent = 0;
+  } else {
+    document.getElementById('db-math').textContent = Math.round(day.n * 0.5);
+    document.getElementById('db-phy').textContent = Math.round(day.n * 0.3);
+    document.getElementById('db-chem').textContent = day.n - Math.round(day.n * 0.5) - Math.round(day.n * 0.3);
+  }
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active');
+      const iIcon = b.querySelector('i:last-child');
+      const svgIcon = b.querySelector('svg:last-child');
+      if (iIcon) iIcon.style.opacity = '0';
+      if (svgIcon) svgIcon.style.opacity = '0';
+    });
+    btn.classList.add('active');
+    
+    const iIcon = btn.querySelector('i:last-child');
+    const svgIcon = btn.querySelector('svg:last-child');
+    if (iIcon) iIcon.style.opacity = '1';
+    if (svgIcon) svgIcon.style.opacity = '1';
+    
+    const w = parseInt(btn.dataset.w);
+    
+    const wrap = document.getElementById('heatmap-wrap');
+    wrap.style.opacity = '0';
+    setTimeout(() => {
+      buildHeatmap(w);
+      wrap.style.opacity = '1';
+    }, 400);
+  };
+});
+
+let tot=0, act=0;
+Object.values(DATA.heatmap).forEach(v=>{tot+=v; if(v>0)act++;});
+document.getElementById('s-tot').textContent = tot.toLocaleString();
+document.getElementById('s-act').textContent = act.toLocaleString();
+
+buildHeatmap(26);
+
+</script>
+</body>
+</html>
