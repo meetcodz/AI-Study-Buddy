@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PDFUploader from './PDFUploader';
 
 const QUIZ_OPTIONS = [
   { count: 10, emoji: '⚡', label: 'Quick Quiz', desc: 'Perfect for a warm-up' },
@@ -8,6 +9,17 @@ const QUIZ_OPTIONS = [
 
 export default function QuizSetup({ onStart }) {
   const [selected, setSelected] = useState(null);
+  const [uploadedTopic, setUploadedTopic] = useState(null);
+  const [questionsGenerated, setQuestionsGenerated] = useState(0);
+
+  // Called by PDFUploader when LLM finishes generating questions
+  const handleQuestionsGenerated = (count, topic, questionIds) => {
+    setUploadedTopic(topic);
+    setQuestionsGenerated(count);
+    // Auto-start with the generated questions
+    const quizLen = count || 10;
+    onStart(quizLen, topic, questionIds);
+  };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 py-10 overflow-hidden">
@@ -24,8 +36,20 @@ export default function QuizSetup({ onStart }) {
             AI Study Coach
           </h1>
           <p className="text-text-secondary text-sm md:text-base">
-            How many questions do you want to attempt?
+            Upload your study material or choose a quiz length
           </p>
+        </div>
+
+        {/* ── PDF Uploader Section ──────────────────────────────────────── */}
+        <div className="mb-6">
+          <PDFUploader onQuestionsGenerated={handleQuestionsGenerated} />
+        </div>
+
+        {/* ── Divider ──────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 h-px bg-glass-border" />
+          <span className="text-xs font-semibold text-text-muted uppercase tracking-widest">or use existing questions</span>
+          <div className="flex-1 h-px bg-glass-border" />
         </div>
 
         {/* Quiz length cards */}
@@ -64,9 +88,9 @@ export default function QuizSetup({ onStart }) {
           })}
         </div>
 
-        {/* Start button */}
+        {/* Start button — for existing questions (no topic filter) */}
         <button
-          onClick={() => selected && onStart(selected)}
+          onClick={() => selected && onStart(selected, null)}
           disabled={!selected}
           className="btn-primary w-full py-4 text-lg tracking-wide flex items-center justify-center gap-2"
         >
@@ -77,9 +101,10 @@ export default function QuizSetup({ onStart }) {
         </button>
 
         <p className="text-text-muted text-xs mt-5">
-          Select a quiz length and press Start to begin your session.
+          Upload a PDF to generate fresh questions, or select a length to quiz from the existing bank.
         </p>
       </div>
     </div>
   );
 }
+

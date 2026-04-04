@@ -5,6 +5,10 @@ Django settings for AI Study Coach - Quiz Engine
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-replace-this-in-production-with-a-real-secret-key'

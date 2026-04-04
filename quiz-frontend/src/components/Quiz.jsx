@@ -9,7 +9,7 @@ function formatTime(totalSeconds) {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-export default function Quiz({ quizLength = 10, onBack, onFinish }) {
+export default function Quiz({ quizLength = 10, topic = null, questionIds = null, onBack, onFinish }) {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -75,8 +75,14 @@ export default function Quiz({ quizLength = 10, onBack, onFinish }) {
       .then((res) => { if (!res.ok) throw new Error(`Session error: ${res.status}`); return res.json(); })
       .then((sessionData) => {
         setSessionId(sessionData.session_id);
-        // 2. Fetch questions
-        return fetch(`${API_BASE}/api/questions/?limit=${quizLength}`);
+        // 2. Fetch questions (filter by topic or ids if provided)
+        let questionsUrl = `${API_BASE}/api/questions/?limit=${quizLength}`;
+        if (questionIds && questionIds.length > 0) {
+          questionsUrl += `&ids=${questionIds.join(',')}`;
+        } else if (topic) {
+          questionsUrl += `&topic=${encodeURIComponent(topic)}`;
+        }
+        return fetch(questionsUrl);
       })
       .then((res) => { if (!res.ok) throw new Error(`Server error: ${res.status}`); return res.json(); })
       .then((data) => {
@@ -85,7 +91,7 @@ export default function Quiz({ quizLength = 10, onBack, onFinish }) {
         setLoading(false);
       })
       .catch((err) => { setError(err.message); setLoading(false); });
-  }, [quizLength]);
+  }, [quizLength, topic]);
 
   // ── Stop recording when navigating away ───────────────────────────────────
   const stopRecordingIfActive = useCallback(() => {

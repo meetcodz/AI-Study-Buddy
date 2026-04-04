@@ -53,12 +53,17 @@ class QuestionListView(APIView):
         limit = self._parse_limit(request.query_params.get('limit', 10))
         topic = request.query_params.get('topic', None)
         difficulty = request.query_params.get('difficulty', None)
+        ids_str = request.query_params.get('ids', None)
 
         # Start with all questions, apply optional filters
         qs = Question.objects.all()
 
-        if topic:
-            qs = qs.filter(topic__iexact=topic)
+        if ids_str:
+            ids_list = [int(i.strip()) for i in ids_str.split(',') if i.strip().isdigit()]
+            qs = qs.filter(id__in=ids_list)
+        else:
+            if topic:
+                qs = qs.filter(topic__iexact=topic)
 
         if difficulty:
             if difficulty not in ('easy', 'medium', 'hard'):
@@ -299,3 +304,69 @@ class UserProfileView(APIView):
 
         serializer = UserProfileSerializer(profile)
         return Response(serializer.data)
+
+
+# ─── POST /api/upload-pdf/ ───────────────────────────────────────────────────
+
+import tempfile
+import os
+from .ingestion_service import process_pdf_and_save
+
+
+class UploadPDFView(APIView):
+    """
+    Accepts a PDF file upload via multipart/form-data, processes it through
+    the Gemini-powered ingestion pipeline, and saves generated questions to DB.
+
+    Request fields:
+        pdf_file  → the uploaded PDF (required)
+        topic     → topic label for generated questions (optional, default: "General")
+    """
+
+    permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        pdf_file = request.FILES.get('pdf_file')
+        topic = request.data.get('topic', 'General')
+
+        if not pdf_file:
+            return Response(
+                {'error': 'No PDF file provided. Send a file under the key "pdf_file".'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # ── Save uploaded file to a temporary location ────────────────────────
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+                for chunk in pdf_file.chunks():
+                    tmp.write(chunk)
+                temp_path = tmp.name
+
+            # ── Run the Gemini ingestion pipeline ─────────────────────────────
+            saved_ids = process_pdf_and_save(temp_path, topic=topic)
+
+            return Response({
+                'message': 'PDF processed successfully!',
+                'topic': topic,
+                'questions_added': len(saved_ids),
+                'question_ids': saved_ids,
+            }, status=status.HTTP_201_CREATED)
+
+        except ValueError as ve:
+            # Raised when pdfplumber extracts no text
+            return Response(
+                {'error': str(ve)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as exc:
+            logger.error("PDF upload processing failed: %s", exc)
+            return Response(
+                {'error': f'Processing failed: {exc}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        finally:
+            # ── Always clean up the temp file ─────────────────────────────────
+            if temp_path and os.path.exists(temp_path):
+                os.remove(temp_path)

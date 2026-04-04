@@ -16,6 +16,7 @@ from .views import (
     BookmarkListView,
     UserProfileView,
     QuizSessionStartView,
+    UploadPDFView,
 )
 
 app_name = 'quiz'
@@ -41,4 +42,7 @@ urlpatterns = [
 
     # POST /api/token/       → Obtain auth token (username + password)
     path('token/', obtain_auth_token, name='api_token_auth'),
+
+    # POST /api/upload-pdf/  → Upload a PDF, generate questions via Gemini
+    path('upload-pdf/', csrf_exempt(UploadPDFView.as_view()), name='upload_pdf'),
 ]

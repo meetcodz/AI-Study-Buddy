@@ -4,12 +4,17 @@ import Quiz from './components/Quiz';
 import ResultDashboard from './components/ResultDashboard';
 
 export default function App() {
-  const [quizLength, setQuizLength] = useState(null);
+  // quizSettings = { length: 10, topic: 'Physics' } or null
+  const [quizSettings, setQuizSettings] = useState(null);
   const [results, setResults] = useState(null);
 
   // Landing → Quiz Setup
-  if (!quizLength && !results) {
-    return <QuizSetup onStart={(len) => setQuizLength(len)} />;
+  if (!quizSettings && !results) {
+    return (
+      <QuizSetup
+        onStart={(length, topic = null, questionIds = null) => setQuizSettings({ length, topic, questionIds })}
+      />
+    );
   }
 
   // Results Dashboard
@@ -17,7 +22,7 @@ export default function App() {
     return (
       <ResultDashboard
         quizResults={results}
-        onRetake={() => { setResults(null); setQuizLength(null); }}
+        onRetake={() => { setResults(null); setQuizSettings(null); }}
       />
     );
   }
@@ -25,9 +30,12 @@ export default function App() {
   // Active Quiz
   return (
     <Quiz
-      quizLength={quizLength}
-      onBack={() => setQuizLength(null)}
+      quizLength={quizSettings.length}
+      topic={quizSettings.topic}
+      questionIds={quizSettings.questionIds}
+      onBack={() => setQuizSettings(null)}
       onFinish={(res) => setResults(res)}
     />
   );
 }
+
