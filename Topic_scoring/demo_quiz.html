@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Integration Demo</title>
+    <style>
+        body { font-family: -apple-system, system-ui, sans-serif; background: #0d1117; color: #e6edf3; margin: 0; padding: 20px; }
+        .container { display: flex; gap: 20px; max-width: 1000px; margin: 0 auto; }
+        .panel { flex: 1; background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; }
+        .topic-card { background: #0d1117; padding: 12px; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 10px; }
+        .weak { color: #f85149; } .average { color: #d29922; } .strong { color: #2ea043; }
+        button { background: #238636; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
+        .option-btn { display: block; margin: 8px 0; background: #21262d; border: 1px solid #30363d; width: 100%; text-align: left; transition: 0.2s;}
+        .option-btn:hover { background: #30363d; }
+    </style>
+</head>
+<body>
+    <h1>StudyCoach AI PostgreSQL Connection Test</h1>
+    <div class="container">
+        <!-- Dashboard Panel -->
+        <div class="panel">
+            <h2>Live Database Topics</h2>
+            <button onclick="fetchTopics()">Refresh Topics from PostgreSQL</button>
+            <div id="topics-list" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Quiz Panel -->
+        <div class="panel">
+            <h2>Quiz Engine Simulation</h2>
+            <button onclick="fetchRandomQuestion()">Fetch Random Question</button>
+            <div id="quiz-area" style="margin-top: 15px; display: none;">
+                <p><strong>Topic ID:</strong> <span id="q-topic"></span></p>
+                <h3 id="q-text"></h3>
+                <div id="q-options"></div>
+                <div style="margin-top:20px; border-top: 1px solid #30363d; padding-top:10px;">
+                    <p><em>Simulate student behavior:</em></p>
+                    <label>Time Spent (sec): <input type="number" id="q-time" value="12"></label><br><br>
+                    <label>Hints Used: <input type="number" id="q-hints" value="0"></label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="demo_quiz.js"></script>
+</body>
+</html>
