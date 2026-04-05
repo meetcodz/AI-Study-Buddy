@@ -1,0 +1,28 @@
+:root{
+  --bg: #0b1630;
+  --panel: #0f2340;
+  --muted: #9fb1d3;
+  --accent: #2a9df4;
+  --card: #0b1b33;
+  --text: #e6eef9;
+}
+*{box-sizing:border-box}
+body{
+  background: linear-gradient(180deg, var(--bg), #031026 120%);
+  color:var(--text);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  margin:0;
+  min-height:100vh;
+}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+.topbar{background:linear-gradient(90deg, #071526, #09203b);padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.brand{margin:0;color:var(--accent);font-weight:700}
+.filter-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px}
+.filter-form select, .filter-form input[type="text"]{background:var(--panel);border:1px solid rgba(255,255,255,0.04);padding:8px 10px;color:var(--text);border-radius:6px}
+.btn{background:var(--accent);color:#042038;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+.question-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:14px;margin-bottom:12px;border-radius:8px}
+.qtext{font-size:15px;color:var(--muted)}
+.tag{background:rgba(255,255,255,0.04);padding:2px 6px;border-radius:4px;font-size:12px;margin-right:6px}
+.attempts{margin-top:8px}
+.attempt{font-size:13px;color:var(--muted)}
+.footer{padding:20px;text-align:center;color:rgba(255,255,255,0.4);margin-top:40px}

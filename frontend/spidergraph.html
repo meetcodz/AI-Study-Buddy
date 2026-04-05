@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Spidergraph — Topic Intelligence Deep Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+  background: #0A0C12; color: #F0F2F5; font-family: 'Outfit', sans-serif; 
+  height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+
+.top-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; z-index: 1000;
+  background: linear-gradient(to bottom, rgba(10,12,18,0.8), transparent); backdrop-filter: blur(8px);
+}
+.nav-left { display: flex; gap: 20px; align-items: center; }
+.nav-btn {
+  background: rgba(30,37,53,0.4); border: 1px solid rgba(59,130,246,0.1); color: #8892A4; width: 42px; height: 42px;
+  border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s cubic-bezier(.22,1,.36,1);
+}
+.nav-btn:hover { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #3B82F6; transform: translateY(-2px); }
+.nav-btn i { width: 20px; height: 20px; }
+.profile-btn {
+  width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(45deg, #1E2535, #0A0C12); border: 1px solid rgba(59,130,246,0.2);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;
+}
+.profile-btn:hover { transform: scale(1.05); border-color: #3B82F6; }
+
+
+.header {
+  position: fixed; top: 70px; left: 0; right: 0; height: 70px;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 32px; z-index: 999;
+  background: linear-gradient(to bottom, rgba(10,12,18,0.8), transparent);
+  backdrop-filter: blur(8px);
+}
+.back-btn {
+  display: flex; align-items: center; gap: 8px; color: #8892A4; text-decoration: none; 
+  font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.2s;
+}
+.back-btn:hover { color: #F0F2F5; }
+.back-btn i { width: 16px; height: 16px; }
+
+.header-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+
+.score-badge {
+  background: rgba(20,184,166,0.1); border: 1px solid rgba(20,184,166,0.25);
+  padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; color: #14B8A6;
+  display: flex; align-items: center; gap: 6px;
+}
+
+
+.main-area {
+  display: grid; grid-template-columns: 260px 1fr 340px; flex: 1; height: 100vh; padding-top: 70px;
+}
+
+
+.left-panel {
+  border-right: 1px solid rgba(59,130,246,0.1); background: #0D1118; padding: 28px 20px;
+  display: flex; flex-direction: column; gap: 32px;
+}
+.nav-group-title {
+  font-size: 10px; font-weight: 700; color: #4B5563; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px; padding-left: 12px;
+}
+.subj-btn {
+  width: 100%; padding: 14px 16px; margin-bottom: 8px; border-radius: 12px; 
+  border: 1px solid transparent; background: transparent; color: #8892A4; 
+  text-align: left; cursor: pointer; transition: all 0.2s; 
+  display: flex; align-items: center; justify-content: space-between;
+}
+.subj-btn-left { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
+.subj-btn i { width: 18px; height: 18px; }
+.subj-btn:hover { background: #161D2C; color: #F0F2F5; }
+.subj-btn.active {
+  background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.2); 
+  color: #3B82F6; box-shadow: 0 4px 12px rgba(59,130,246,0.05);
+}
+
+
+.center-panel {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 50%, rgba(59,130,246,0.04) 0%, transparent 70%);
+}
+.chart-wrapper {
+  width: 100%; max-width: 650px; aspect-ratio: 1; position: relative; z-index: 2;
+  transition: transform 0.4s ease;
+}
+
+.click-prompt {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8892A4; font-weight: 500;
+  background: rgba(13,17,24,0.8); border: 1px solid #1E2D44; padding: 8px 16px; border-radius: 99px;
+  backdrop-filter: blur(4px); pointer-events: none;
+}
+
+
+.right-panel {
+  border-left: 1px solid rgba(59,130,246,0.1); background: #0D1118; padding: 28px 24px;
+  overflow-y: auto; display: flex; flex-direction: column;
+}
+.right-panel::-webkit-scrollbar { width: 4px; }
+.right-panel::-webkit-scrollbar-thumb { background: #1E2535; border-radius: 2px; }
+
+
+#unselected-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; 
+  height: 100%; text-align: center; color: #4B5563;
+}
+#unselected-state i { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+
+#detail-container { display: none; animation: slideInFade 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+@keyframes slideInFade { 
+  from { opacity: 0; transform: translateX(20px); } 
+  to { opacity: 1; transform: translateX(0); } 
+}
+
+.dt-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.dt-pretitle { font-size: 10px; font-weight: 700; color: #3B82F6; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.dt-title { font-size: 26px; font-weight: 800; color: #F0F2F5; line-height: 1.1; }
+
+.dt-card {
+  background: #131B28; border: 1px solid #1E2D44; border-radius: 16px; padding: 20px; margin-bottom: 20px;
+}
+.dt-card-lbl { font-size: 11px; font-weight: 700; color: #8892A4; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+
+.score-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.score-val { font-size: 42px; font-weight: 800; color: #F0F2F5; line-height: 1; }
+.score-sub { font-size: 13px; font-weight: 600; }
+.score-up { color: #14B8A6; } .score-down { color: #F43F5E; }
+
+.prog-bg { height: 6px; background: #0A0C12; border-radius: 3px; overflow: hidden; margin-top: 12px; }
+.prog-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
+
+
+.btn {
+  width: 100%; padding: 14px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 13px; 
+  font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;
+}
+.btn-primary { background: #3B82F6; color: #FFF; box-shadow: 0 4px 14px rgba(59,130,246,0.25); }
+.btn-primary:hover { background: #2563EB; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.35); }
+.btn-secondary { background: rgba(255,255,255,0.05); color: #F0F2F5; border: 1px solid rgba(255,255,255,0.1); }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+
+.hist-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+.hist-item:last-child { border-bottom: none; padding-bottom: 0; }
+.hist-date { font-size: 12px; color: #8892A4; }
+.hist-score { font-size: 13px; font-weight: 600; color: #F0F2F5; }
+.hist-score.bad { color: #F43F5E; } .hist-score.good { color: #14B8A6; }
+
+</style>
+</head>
+<body>
+
+<nav class="top-nav" style="position:relative;">
+  <div class="nav-left">
+    <div class="nav-btn" title="Home" onclick="window.location.href='finaldash.html'"><i data-lucide="home"></i></div>
+    <div class="nav-btn" title="Quiz"><i data-lucide="brain-circuit"></i></div>
+    <div class="nav-btn" title="Analyse"><i data-lucide="bar-chart-3"></i></div>
+    <div class="nav-btn" title="Questions"><i data-lucide="layers"></i></div>
+  </div>
+  <div class="profile-btn" id="profile-btn" title="Profile">
+    <i data-lucide="user" style="color: #4B5563; width: 22px; height: 22px;"></i>
+  </div>
+  <div id="auth-dropdown" style="position:absolute; top:65px; right:32px; background:#131B28; border:1px solid #1A2535; padding:16px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s; transform:translateY(-10px); box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:2000; min-width:200px;">
+    <div style="font-size:10px; font-weight:700; color:#4B5563; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px">Logged in as</div>
+    <div id="auth-user-disp" style="font-size:15px; font-weight:600; color:#F0F2F5; margin-bottom:16px; word-break:break-all;">User</div>
+    <button id="logout-btn" style="width:100%; background:rgba(244,63,94,0.1); color:#F43F5E; border:1px solid rgba(244,63,94,0.25); border-radius:8px; padding:10px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
+      <i data-lucide="log-out" style="width:14px; height:14px;"></i> Log Out
+    </button>
+  </div>
+</nav>
+
+<header class="header">
+  <div style="display:flex; align-items:center; gap:24px;">
+    <a href="finaldash.html" class="back-btn"><i data-lucide="arrow-left"></i> Back to Dashboard</a>
+    <div style="width:1px; height:24px; background:#1E2D44;"></div>
+    <div class="header-title">Topic Intelligence Center</div>
+  </div>
+  <div class="header-right">
+    <div class="score-badge"><i data-lucide="zap" style="width:14px;height:14px;"></i> Overall Insight: Strong</div>
+  </div>
+</header>
+
+
+<div class="main-area">
+
+
+  <aside class="left-panel">
+    <div>
+      <div class="nav-group-title">Subject Scopes</div>
+      <button class="subj-btn active" data-subject="math">
+        <div class="subj-btn-left"><i data-lucide="function-square"></i> Mathematics</div>
+      </button>
+      <button class="subj-btn" data-subject="physics">
+        <div class="subj-btn-left"><i data-lucide="atom"></i> Physics</div>
+      </button>
+      <button class="subj-btn" data-subject="chem">
+        <div class="subj-btn-left"><i data-lucide="beaker"></i> Chemistry</div>
+      </button>
+    </div>
+
+    <div style="margin-top:auto; padding:16px; background:rgba(20,184,166,0.05); border:1px solid rgba(20,184,166,0.15); border-radius:12px;">
+      <div style="font-size:11px; font-weight:700; color:#14B8A6; text-transform:uppercase; margin-bottom:6px;">Current Focus</div>
+      <div style="font-size:13px; color:#F0F2F5;">You are making strong progress in Mathematics. Select a node on the radar to inspect.</div>
+    </div>
+  </aside>
+
+  
+  <main class="center-panel">
+    <div class="chart-wrapper">
+      <canvas id="radarChart"></canvas>
+    </div>
+    <div class="click-prompt"><i data-lucide="mouse-pointer-click"></i> Click any node to analyze</div>
+  </main>
+
+  <aside class="right-panel">
+    
+    
+    <div id="unselected-state">
+      <i data-lucide="radar"></i>
+      <div style="font-size:16px; font-weight:600; color:#F0F2F5; margin-bottom:4px;">No Topic Selected</div>
+      <div style="font-size:13px;">Click on a specific point in the radar chart to view deep insights and history.</div>
+    </div>
+
+    
+    <div id="detail-container">
+      <div class="dt-header">
+        <div>
+          <div class="dt-pretitle" id="dt-subject-lbl">Mathematics</div>
+          <div class="dt-title" id="dt-topic-name">Algebra</div>
+        </div>
+      </div>
+
+      <div class="dt-card">
+        <div class="dt-card-lbl">Absolute Accuracy</div>
+        <div class="score-row">
+          <div class="score-val mono" id="dt-score-val">81%</div>
+          <div class="score-sub score-up" id="dt-score-trend">↑ +4% this week</div>
+        </div>
+        <div class="prog-bg">
+          <div class="prog-fill" id="dt-score-bar" style="width:81%; background:linear-gradient(90deg,#0d9488,#14B8A6);"></div>
+        </div>
+      </div>
+
+      <div class="dt-card">
+        <div class="dt-card-lbl">Recent Quizzes</div>
+        <div id="dt-history">
+       
+        </div>
+      </div>
+
+      <div style="margin-top:auto;">
+        <button class="btn btn-primary"><i data-lucide="play-circle"></i> Start Targeted Practice</button>
+        <button class="btn btn-secondary"><i data-lucide="book-open"></i> Review Core Concepts</button>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+lucide.createIcons();
+
+
+const MOCK = {
+  math: {
+    color: '#3B82F6', bgColor: 'rgba(59,130,246,0.15)', name: 'Mathematics',
+    labels: ["Probability", "Algebra", "Calculus", "Matrices", "Vectors"],
+    data: [38, 81, 65, 55, 72],
+    trends: [-5, 4, 12, -2, 8],
+    history: [
+      { t: 'Probability', log: [{d:'Today',s:35},{d:'2 days ago',s:40},{d:'Last week',s:42}] },
+      { t: 'Algebra', log: [{d:'Today',s:85},{d:'Yesterday',s:80},{d:'Last week',s:72}] },
+      { t: 'Calculus', log: [{d:'Yesterday',s:65},{d:'3 days ago',s:60},{d:'Last week',s:50}] },
+      { t: 'Matrices', log: [{d:'Today',s:55},{d:'4 days ago',s:58},{d:'Last week',s:60}] },
+      { t: 'Vectors', log: [{d:'Yesterday',s:72},{d:'2 days ago',s:68},{d:'Last week',s:65}] }
+    ]
+  },
+  physics: {
+    color: '#8B5CF6', bgColor: 'rgba(139,92,246,0.15)', name: 'Physics',
+    labels: ["Kinematics", "Thermodynamics", "Optics", "Current", "Modern physics"],
+    data: [62, 44, 58, 49, 70],
+    trends: [5, -8, 2, -5, 10],
+    history: [
+      { t: 'Kinematics', log: [{d:'Today',s:65},{d:'Yesterday',s:60}] },
+      { t: 'Thermodynamics', log: [{d:'Today',s:40},{d:'2 days ago',s:48}] },
+      { t: 'Optics', log: [{d:'Yesterday',s:60},{d:'Last week',s:55}] },
+      { t: 'Current', log: [{d:'Today',s:50},{d:'3 days ago',s:55}] },
+      { t: 'Modern physics', log: [{d:'Today',s:75},{d:'Yesterday',s:68}] }
+    ]
+  },
+  chem: {
+    color: '#EC4899', bgColor: 'rgba(236,72,153,0.15)', name: 'Chemistry',
+    labels: ["Organic", "Inorganic", "Physical", "Bonding", "Equilibrium"],
+    data: [75, 52, 60, 47, 68],
+    trends: [6, -2, 8, -6, 5],
+    history: [
+      { t: 'Organic', log: [{d:'Today',s:80},{d:'Yesterday',s:70}] },
+      { t: 'Inorganic', log: [{d:'Today',s:50},{d:'2 days ago',s:55}] },
+      { t: 'Physical', log: [{d:'Yesterday',s:62},{d:'Last week',s:55}] },
+      { t: 'Bonding', log: [{d:'Today',s:45},{d:'3 days ago',s:52}] },
+      { t: 'Equilibrium', log: [{d:'Yesterday',s:70},{d:'Last week',s:65}] }
+    ]
+  }
+};
+
+let currentSubj = 'math';
+let chartInstance = null;
+
+const ctx = document.getElementById("radarChart").getContext("2d");
+
+Chart.defaults.color = '#8892A4';
+Chart.defaults.font.family = "'Outfit', sans-serif";
+
+function renderChart(subjKey) {
+  const data = MOCK[subjKey];
+  
+  if(chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Accuracy %',
+        data: data.data,
+        backgroundColor: data.bgColor,
+        borderColor: data.color,
+        borderWidth: 2.5,
+        pointBackgroundColor: data.color,
+        pointBorderColor: '#0A0C12',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 9,
+        pointHoverBackgroundColor: '#FFF',
+        pointHoverBorderColor: data.color,
+        pointHoverBorderWidth: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 1000, easing: 'easeOutQuart' },
+      layout: { padding: 20 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(13, 17, 24, 0.95)',
+          titleColor: '#8892A4', bodyColor: '#F0F2F5',
+          bodyFont: { size: 16, weight: 'bold', family: "'JetBrains Mono', monospace" },
+          padding: 12, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+          displayColors: false,
+          callbacks: { label: (ctx) => `${ctx.raw}% Accuracy` }
+        }
+      },
+      scales: {
+        r: {
+          angleLines: { color: 'rgba(255,255,255,0.05)', lineWidth: 1.5 },
+          grid: { color: 'rgba(255,255,255,0.05)', lineWidth: 1.5 },
+          pointLabels: { color: '#8892A4', font: { size: 13, weight: '600' } },
+          ticks: { display: false, stepSize: 20 },
+          min: 0, max: 100
+        }
+      },
+      onClick: (event, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index;
+          openDetailPanel(idx);
+        }
+      }
+    }
+  });
+}
+
+function openDetailPanel(index) {
+  const data = MOCK[currentSubj];
+  const topic = data.labels[index];
+  const score = data.data[index];
+  const trend = data.trends[index];
+  const history = data.history.find(h => h.t === topic).log;
+
+  document.getElementById('unselected-state').style.display = 'none';
+  const detailPanel = document.getElementById('detail-container');
+  
+  
+  detailPanel.style.animation = 'none';
+  detailPanel.offsetHeight; 
+  detailPanel.style.display = 'block';
+  detailPanel.style.animation = 'slideInFade 0.4s cubic-bezier(0.22,1,0.36,1) forwards';
+
+  document.getElementById('dt-subject-lbl').textContent = data.name;
+  document.getElementById('dt-subject-lbl').style.color = data.color;
+  document.getElementById('dt-topic-name').textContent = topic;
+  
+  document.getElementById('dt-score-val').textContent = score + '%';
+  const trendEl = document.getElementById('dt-score-trend');
+  if(trend >= 0) {
+    trendEl.innerHTML = `<i data-lucide="trending-up" style="width: 12px; height: 12px;"></i> +${trend}% this week`;
+    trendEl.className = 'score-sub score-up';
+  } else {
+    trendEl.innerHTML = `<i data-lucide="trending-down" style="width: 12px; height: 12px;"></i> ${trend}% this week`;
+    trendEl.className = 'score-sub score-down';
+  }
+  if (window.lucide) lucide.createIcons();
+
+  const progCol = score >= 70 ? '#14B8A6' : (score >= 50 ? '#F59E0B' : '#F43F5E');
+  const progFill = document.getElementById('dt-score-bar');
+  progFill.style.width = '0%';
+  setTimeout(() => {
+    progFill.style.width = score + '%';
+    progFill.style.background = `linear-gradient(90deg, ${progCol}80, ${progCol})`;
+  }, 50);
+
+  let histHtml = '';
+  history.forEach(h => {
+    const isGood = h.s >= score;
+    const cName = isGood ? 'good' : 'bad';
+    histHtml += `
+      <div class="hist-item">
+        <span class="hist-date">${h.d}</span>
+        <span class="hist-score mono ${cName}">${h.s}%</span>
+      </div>
+    `;
+  });
+  document.getElementById('dt-history').innerHTML = histHtml;
+}
+
+
+document.querySelectorAll('.subj-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+ 
+    document.querySelectorAll('.subj-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.color = '#8892A4';
+      b.querySelector('svg').style.color = '#8892A4';
+    });
+    btn.classList.add('active');
+    btn.style.color = MOCK[btn.dataset.subject].color;
+    btn.querySelector('svg').style.color = MOCK[btn.dataset.subject].color;
+
+    
+    currentSubj = btn.dataset.subject;
+    renderChart(currentSubj);
+
+    
+    document.getElementById('unselected-state').style.display = 'flex';
+    document.getElementById('detail-container').style.display = 'none';
+  });
+});
+
+document.querySelector('.subj-btn[data-subject="math"]').style.color = MOCK.math.color;
+document.querySelector('.subj-btn[data-subject="math"] svg').style.color = MOCK.math.color;
+renderChart('math');
+
+</script>
+<script src="js/chatbot.js"></script>
+<script src="js/global-bg.js"></script>
+</body>
+</html>

@@ -16,8 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+import quiz_core.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('quiz_api.urls')),
-]
+    path('', include('chat_api.urls')),
+    path('api/', include('quiz_core.urls')),
+    path('ui/upload/', quiz_core.views.upload_pdf_ui, name='upload_pdf_ui'),
+    path('ui/questions/', quiz_core.views.question_list, name='question_list'),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) \
+  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

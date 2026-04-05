@@ -16,9 +16,9 @@ export default function QuizSetup({ onStart }) {
   const handleQuestionsGenerated = (count, topic) => {
     setUploadedTopic(topic);
     setQuestionsGenerated(count);
-    // Auto-start with the generated questions (always exactly 10 as requested)
-    const quizLen = 10;
-    onStart(quizLen, topic);
+    // The user wants to manually go to the Django UI to view questions
+    // instead of automatically starting a quiz within React.
+    // We will just show the success state.
   };
 
   return (

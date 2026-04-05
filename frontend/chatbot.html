@@ -1,0 +1,46 @@
+<div id="study-bot-window">
+  <div id="study-bot-header">
+    <div class="bot-avatar">
+      <i data-lucide="bot" style="width: 20px; height: 20px; color: var(--teal);"></i>
+    </div>
+    <div class="bot-title-area">
+      <div class="bot-title">StudyBot AI</div>
+      <div class="bot-status"><div class="bot-status-dot"></div>Online</div>
+    </div>
+    <div class="header-actions">
+
+      <button class="h-btn" id="h-btn-clear" title="Clear chat history">
+        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+      </button>
+
+      <button class="h-btn" id="h-btn-fullscreen" title="Toggle Fullscreen">
+        <i data-lucide="maximize" style="width: 14px; height: 14px;"></i>
+      </button>
+    </div>
+  </div>
+  <div id="study-bot-messages">
+    <div class="bot-msg-row ai">
+      <div class="chat-bubble">Hi there! I'm your AI Study Buddy. How can I help you crush your goals today?</div>
+      <div class="msg-actions">
+          <button class="action-btn copy-btn" data-text="Hi there! I'm your AI Study Buddy. How can I help you crush your goals today?">
+            <i data-lucide="copy" style="width: 12px; height: 12px; margin-right: 4px;"></i>
+            Copy
+          </button>
+      </div>
+    </div>
+  </div>
+  <div id="study-bot-input-area">
+    <input type="text" id="study-bot-input" autocomplete="off" placeholder="Ask a subject question..." />
+    <button class="control-btn" id="study-bot-send">
+      <i data-lucide="send" style="width: 14px; height: 14px; color: #07090f;"></i>
+    </button>
+    <button class="control-btn" id="study-bot-stop" title="Stop response">
+      <i data-lucide="square" style="width: 14px; height: 14px; fill: currentColor;"></i>
+    </button>
+  </div>
+</div>
+
+<div id="study-bot-btn" title="Open StudyBot">
+  <i class="open-icon" data-lucide="message-square" style="width: 24px; height: 24px; color: #07090f;"></i>
+  <i class="close-icon" data-lucide="x" style="width: 24px; height: 24px; color: #07090f;"></i>
+</div>

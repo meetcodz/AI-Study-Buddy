@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>AI Study Quiz | StudyFlow</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              accent: '#818cf8',
+              'accent-soft': 'rgba(129, 140, 248, 0.12)',
+              'text-primary': '#f1f5f9',
+              'text-secondary': '#94a3b8',
+              'text-muted': '#64748b',
+              'glass-border': 'rgba(148, 163, 184, 0.15)',
+              'surface-light': '#1e293b'
+            }
+          }
+        }
+      }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/quiz.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="overflow-x-hidden min-h-screen pt-[70px]">
+
+    <div class="top-nav">
+      <div class="nav-left">
+        <a href="finaldash.html" class="nav-btn" title="Back to Dashboard">
+          <i data-lucide="arrow-left"></i>
+        </a>
+        <div style="font-weight:700; font-size:18px; color:#F0F2F5; margin-left:8px; line-height: 42px;">
+          StudyFlow Quiz
+        </div>
+      </div>
+      <div class="profile-btn">
+        <img src="https://ui-avatars.com/api/?name=User&background=3B82F6&color=fff" alt="Profile">
+      </div>
+    </div>
+
+    <div id="hero" style="position:fixed; inset:0; z-index:-1; pointer-events:none;">
+      
+      
+    </div>
+
+    <div id="quiz-app-container"></div>
+
+    <script>lucide.createIcons();</script>
+    <script src="js/quiz.js"></script>
+    <script src="js/chatbot.js"></script>
+<script src="js/global-bg.js"></script>
+</body>
+</html>

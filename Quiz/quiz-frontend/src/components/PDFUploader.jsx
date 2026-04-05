@@ -208,12 +208,25 @@ export default function PDFUploader({ onQuestionsGenerated }) {
           <polyline points="20 6 9 17 4 12" />
         </svg>
       </div>
-      <h3 className="text-lg font-bold text-text-primary mb-1">Questions Generated!</h3>
+      <h3 className="text-lg font-bold text-text-primary mb-1">Questions Saved to Database!</h3>
       <p className="text-sm text-text-secondary">
         <span className="font-bold text-accent">{result?.questions_added || 0}</span> questions added
         {result?.topic ? <> under topic <span className="font-bold text-accent">"{result.topic}"</span></> : null}
       </p>
-      <p className="text-xs text-text-muted mt-3 animate-pulse">Starting your quiz…</p>
+      <a
+        href="http://localhost:8000/ui/questions/"
+        className="btn-primary inline-flex items-center gap-2 mt-5 px-6 py-2.5 text-sm"
+        style={{ borderRadius: '8px', textDecoration: 'none' }}
+      >
+        View All Questions →
+      </a>
+      <p className="text-xs text-text-muted mt-3">Or upload another PDF below.</p>
+      <button
+        onClick={clearFile}
+        className="mt-2 text-xs text-text-muted underline hover:text-text-secondary"
+      >
+        Upload another PDF
+      </button>
     </div>
   );
 }

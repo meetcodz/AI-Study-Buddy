@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Daily Goal Console — StudyFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+  background: #0A0C12; color: #F0F2F5; font-family: 'Outfit', sans-serif; 
+  height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+
+.header {
+  position: fixed; top: 0; left: 0; right: 0; height: 70px;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 32px; z-index: 1000;
+  background: linear-gradient(to bottom, rgba(10,12,18,0.8), transparent);
+  backdrop-filter: blur(8px);
+}
+.back-btn {
+  display: flex; align-items: center; gap: 8px; color: #8892A4; text-decoration: none; 
+  font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.2s;
+}
+.back-btn:hover { color: #F0F2F5; }
+.back-btn svg { width: 16px; height: 16px; }
+
+.header-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+.score-badge {
+  background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25);
+  padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; color: #3B82F6;
+  display: flex; align-items: center; gap: 6px;
+}
+
+
+.main-area {
+  display: grid; grid-template-columns: 280px 1fr 340px; flex: 1; height: 100vh; padding-top: 70px;
+}
+
+
+.left-panel {
+  border-right: 1px solid rgba(59,130,246,0.1); background: #0D1118; padding: 28px 20px;
+  display: flex; flex-direction: column; gap: 24px; overflow-y: auto;
+}
+.left-panel::-webkit-scrollbar { width: 4px; }
+.left-panel::-webkit-scrollbar-thumb { background: #1E2535; border-radius: 2px; }
+
+.nav-group-title {
+  font-size: 10px; font-weight: 700; color: #4B5563; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px;
+}
+
+.streak-card {
+  background: linear-gradient(135deg, #1A1208, #111824); border: 1px solid #F59E0B40;
+  padding: 16px; border-radius: 14px; text-align: center;
+}
+.streak-card .val { font-size: 38px; font-weight: 800; color: #F59E0B; line-height: 1; margin-bottom: 4px; }
+.streak-card .lbl { font-size: 12px; font-weight: 600; color: #F59E0B90; text-transform: uppercase; letter-spacing: 0.1em; }
+
+.hist-card {
+  background: #111824; border: 1px solid rgba(59,130,246,0.1); border-radius: 14px; padding: 16px; margin-bottom: 12px;
+}
+.hc-title { font-size: 11px; font-weight: 700; color: #8892A4; text-transform: uppercase; margin-bottom: 14px; letter-spacing: 0.1em;}
+.hc-item { display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;}
+.hc-item:last-child { margin-bottom:0;}
+.hc-date { font-size:13px; color:#8892A4; }
+.hc-bars { display:flex; gap:2px; flex:1; margin:0 12px; height:8px;}
+.hc-bar { height:100%; border-radius:2px; background:#1E2535;}
+.hc-score { font-size:13px; font-weight:700; width:30px; text-align:right;}
+.hc-score.met { color:#14B8A6; }
+.hc-score.miss { color:#F43F5E; }
+
+
+.center-panel {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 50%, rgba(13,148,136,0.04) 0%, transparent 60%);
+}
+.ring-wrapper {
+  position:relative; width:450px; height:450px; display:flex; align-items:center; justify-content:center;
+}
+.ring-wrapper svg {
+  position:absolute; inset:0; transform:rotate(-90deg); filter:drop-shadow(0 0 40px rgba(20,184,166,0.15));
+}
+.inner-text {
+  display:flex; flex-direction:column; align-items:center; text-align:center; z-index:2;
+}
+.inner-perc { font-size: 80px; font-weight: 800; color: #14B8A6; line-height: 1; margin-bottom: 8px;}
+.inner-lbl { font-size: 18px; font-weight: 600; color: #F0F2F5; margin-bottom: 4px; }
+.inner-sub { font-size: 13px; color: #8892A4; }
+
+
+.right-panel {
+  border-left: 1px solid rgba(59,130,246,0.1); background: #0D1118; padding: 28px 24px;
+  overflow-y: auto; display: flex; flex-direction: column; gap: 24px;
+}
+
+.dt-card {
+  background: #111824; border: 1px solid rgba(59,130,246,0.1); border-radius: 16px; padding: 20px; 
+}
+.dt-card-lbl { font-size: 11px; font-weight: 700; color: #8892A4; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+
+
+.ctrl-row { display: flex; align-items: stretch; height: 50px; background: #0A0C12; border: 1px solid #1E2D44; border-radius: 12px; overflow: hidden; }
+.ctrl-btn {
+  flex: 1; border: none; background: transparent; color: #8892A4; font-size: 24px; cursor: pointer; transition: 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.ctrl-btn:hover { background: #161D2C; color: #F0F2F5; }
+.ctrl-disp {
+  width: 80px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700;
+  border-left: 1px solid #1E2D44; border-right: 1px solid #1E2D44; background: #111824;
+}
+
+
+.edit-row { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+.edit-form { display: none; align-items: center; gap: 8px; }
+.edit-inp { width: 60px; height: 32px; background: #0A0C12; border: 1px solid #3B82F6; border-radius: 8px; color: #F0F2F5; font-size: 16px; text-align: center; }
+
+.btn {
+  padding: 8px 16px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 12px; 
+  font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; display: flex; align-items: center; gap: 6px;
+}
+.btn-primary { background: #3B82F6; color: #FFF; }
+.btn-primary:hover { background: #2563EB; }
+.btn-ghost { background: transparent; color: #8892A4; border: 1px solid #1E2D44; }
+.btn-ghost:hover { background: #161D2C; color: #F0F2F5; }
+
+
+.tlog { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
+.tlog:last-child { margin-bottom: 0; }
+.ticon { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-right: 12px; }
+.ticon svg { width: 14px; height: 14px; }
+
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div style="display:flex; align-items:center; gap:24px;">
+    <a href="finaldash.html" class="back-btn"><i data-lucide="arrow-left"></i> Back to Dashboard</a>
+    <div style="width:1px; height:24px; background:#1E2D44;"></div>
+    <div class="header-title">Daily Goal Terminal</div>
+  </div>
+  <div class="header-right">
+    <div class="score-badge"><i data-lucide="target" style="width:14px;height:14px;"></i> Goal Tracking Active</div>
+  </div>
+</header>
+
+<div class="main-area">
+
+
+  <aside class="left-panel">
+    <div class="streak-card">
+      <div class="val mono" id="cur-streak">12</div>
+      <div class="lbl">Days Streak <i data-lucide="flame" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-top: -2px;"></i></div>
+    </div>
+
+    <div class="hist-card">
+      <div class="hc-title">Previous Days</div>
+      <div id="hist-list"></div>
+    </div>
+
+    <div class="hist-card">
+      <div class="hc-title">Total Lifetime</div>
+      <div style="font-size:32px; font-weight:800; color:#3B82F6; font-family:'JetBrains Mono';">1,847</div>
+      <div style="font-size:12px; color:#8892A4;">Questions solved</div>
+    </div>
+  </aside>
+
+  
+  <main class="center-panel">
+    <div class="ring-wrapper">
+      <svg width="450" height="450" viewBox="0 0 450 450">
+        <circle cx="225" cy="225" r="200" fill="none" stroke="#131B28" stroke-width="16"/>
+        <circle id="g-arc" cx="225" cy="225" r="200" fill="none" stroke="#14B8A6" stroke-width="16"
+          stroke-dasharray="1256.6" stroke-dashoffset="1256.6" stroke-linecap="round"
+          style="transition:stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.4s"/>
+      </svg>
+      <div class="inner-text">
+        <div class="inner-perc mono" id="g-pct">0%</div>
+        <div class="inner-lbl" id="g-headline">13 questions to go</div>
+        <div class="inner-sub" id="g-sub">Keep going!</div>
+      </div>
+    </div>
+  </main>
+
+
+  <aside class="right-panel">
+    
+    <div class="dt-card">
+      <div class="dt-card-lbl">Update Progress</div>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" id="g-minus"><i data-lucide="minus"></i></button>
+        <div class="ctrl-disp mono" id="g-done">7</div>
+        <button class="ctrl-btn" id="g-plus"><i data-lucide="plus"></i></button>
+      </div>
+      
+      <div class="edit-row" id="g-view">
+        <div style="font-size:12px; color:#8892A4;">Target: <span id="g-goal-disp" class="mono" style="color:#F0F2F5; font-size:14px; font-weight:700; margin-left:4px;">20</span></div>
+        <button class="btn btn-ghost" id="g-edit-btn">Edit Target</button>
+      </div>
+
+      <div class="edit-form" id="g-edit-form">
+        <input type="number" id="g-inp" class="edit-inp" value="20" min="1" />
+        <button class="btn btn-primary" id="g-save">Save</button>
+        <button class="btn btn-ghost" id="g-cancel"><i data-lucide="x" style="width: 14px; height: 14px;"></i></button>
+      </div>
+    </div>
+
+    <div class="dt-card">
+      <div class="dt-card-lbl">Today's Topics</div>
+      <div class="tlog">
+        <div style="display:flex; align-items:center;">
+          <div class="ticon" style="background:rgba(59,130,246,0.15); color:#3B82F6;"><i data-lucide="function-square"></i></div>
+          <span style="font-weight:600; color:#F0F2F5;">Math (Algebra)</span>
+        </div>
+        <span class="mono" style="color:#8892A4;">4 Qs</span>
+      </div>
+      <div class="tlog">
+        <div style="display:flex; align-items:center;">
+          <div class="ticon" style="background:rgba(139,92,246,0.15); color:#8B5CF6;"><i data-lucide="atom"></i></div>
+          <span style="font-weight:600; color:#F0F2F5;">Physics (Optics)</span>
+        </div>
+        <span class="mono" style="color:#8892A4;">3 Qs</span>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+lucide.createIcons();
+
+const DATA = { done: 7, goal: 20, history: [ {d:'Yesterday', s:20, g:20}, {d:'Mon', s:25, g:20}, {d:'Sun', s:10, g:15}, {d:'Sat', s:18, g:18}, {d:'Fri', s:22, g:20} ] };
+
+let done = DATA.done;
+let goal = DATA.goal;
+const CIRC = 1256.6;
+
+function render() {
+  const pct = Math.min(done / goal, 1);
+  const met = done >= goal;
+  const col = met ? '#F59E0B' : '#14B8A6';
+  
+  document.getElementById('g-arc').setAttribute('stroke-dashoffset', CIRC * (1 - pct));
+  document.getElementById('g-arc').setAttribute('stroke', col);
+  document.getElementById('g-pct').textContent = Math.round(pct * 100) + '%';
+  document.getElementById('g-pct').style.color = col;
+
+  if (met) {
+    document.getElementById('g-headline').innerHTML = 'Goal crushed! <i data-lucide="party-popper" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle;"></i>';
+    document.getElementById('g-sub').textContent = 'Amazing work today.';
+  } else {
+    document.getElementById('g-headline').textContent = `${goal - done} questions to go`;
+    document.getElementById('g-sub').textContent = `Keep going, you're ${Math.round(pct * 100)}% there`;
+  }
+
+  document.getElementById('g-done').textContent = done;
+  document.getElementById('g-goal-disp').textContent = goal;
+  if (window.lucide) lucide.createIcons();
+}
+
+document.getElementById('g-minus').onclick = () => { if(done>0) { done--; render(); } };
+document.getElementById('g-plus').onclick = () => { done++; render(); };
+
+document.getElementById('g-edit-btn').onclick = () => {
+  document.getElementById('g-view').style.display = 'none';
+  document.getElementById('g-edit-form').style.display = 'flex';
+  document.getElementById('g-inp').focus();
+};
+document.getElementById('g-save').onclick = () => {
+  const v = parseInt(document.getElementById('g-inp').value);
+  if(v>0) goal = v;
+  document.getElementById('g-view').style.display = 'flex';
+  document.getElementById('g-edit-form').style.display = 'none';
+  render();
+};
+document.getElementById('g-cancel').onclick = () => {
+  document.getElementById('g-view').style.display = 'flex';
+  document.getElementById('g-edit-form').style.display = 'none';
+};
+
+
+let histHtml = '';
+DATA.history.forEach(h => {
+  const met = h.s >= h.g;
+  const pct = Math.min(h.s / h.g, 1);
+  histHtml += `
+    <div class="hc-item">
+      <div class="hc-date">${h.d}</div>
+      <div class="hc-bars">
+        <div class="hc-bar" style="width:${pct*100}%; background:${met?'#14B8A6':'#3B82F6'};"></div>
+      </div>
+      <div class="hc-score mono ${met?'met':'miss'}">${h.s}</div>
+    </div>
+  `;
+});
+document.getElementById('hist-list').innerHTML = histHtml;
+
+render();
+</script>
+<script src="js/chatbot.js"></script>
+<script src="js/global-bg.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Performance Analysis — StudyFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/analysis.css">
+  <style>
+    /* Inline styles for the top nav only, to match dashboard */
+    .top-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 1000;
+      background: rgba(10, 12, 18, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .nav-left { display: flex; gap: 16px; align-items: center; }
+    .nav-btn {
+      background: rgba(30, 37, 53, 0.4);
+      border: 1px solid rgba(59, 130, 246, 0.1);
+      color: #8892A4;
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .nav-btn:hover { background: rgba(59, 130, 246, 0.1); color: #3B82F6; transform: translateY(-2px); }
+    .nav-btn.active { color: #14B8A6; background: rgba(20, 184, 166, 0.1); border-color: rgba(20, 184, 166, 0.2); }
+    .profile-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #1E2535, #0A0C12);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="nav-left">
+    <div class="nav-btn" title="Home" onclick="location.href='finaldash.html'"><i data-lucide="home"></i></div>
+    <div class="nav-btn" title="Quiz" onclick="location.href='quiz.html'"><i data-lucide="brain"></i></div>
+    <div class="nav-btn active" title="Analyse"><i data-lucide="bar-chart-3"></i></div>
+    <div class="nav-btn" title="Questions" onclick="location.href='questions.html'"><i data-lucide="layers"></i></div>
+  </div>
+  <div class="nav-right">
+    <div class="profile-btn" id="profile-btn" title="Profile">
+      <i data-lucide="user" style="color: #4B5563;"></i>
+    </div>
+  </div>
+</nav>
+
+<div class="analysis-container">
+  <header class="page-header">
+    <h1 class="page-title">Performance Analytics</h1>
+    <p class="page-sub" id="overall-summary">Loading your performance data...</p>
+  </header>
+
+  <!-- At a Glance Stats -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label"><i data-lucide="target" style="width: 14px;"></i> Total Attempted</div>
+      <div class="stat-value" id="stat-total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i data-lucide="check-circle-2" style="width: 14px;"></i> Accuracy</div>
+      <div class="stat-value" id="stat-accuracy">0%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i data-lucide="clock" style="width: 14px;"></i> Avg. Time / Q</div>
+      <div class="stat-value" id="stat-time">0s</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i data-lucide="trending-down" style="width: 14px;"></i> Growth Area</div>
+      <div class="stat-value" id="stat-weakest">None</div>
+    </div>
+  </section>
+
+  <!-- Subject Filter -->
+  <nav class="subjects-nav" id="subjects-nav">
+    <!-- Pilled rendered by JS -->
+  </nav>
+
+  <!-- Topics and Accordions -->
+  <main class="topics-list" id="topics-list">
+    <!-- Cards rendered by JS -->
+  </main>
+</div>
+
+<script src="js/global-bg.js"></script>
+<script src="js/analysis.js"></script>
+<script>
+  // Force Lucide icons to update after dynamic loads if necessary
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  });
+</script>
+</body>
+</html>

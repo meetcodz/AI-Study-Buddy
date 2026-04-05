@@ -1,0 +1,121 @@
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+  background: #0A0C12; color: #F0F2F5; font-family: 'Outfit', sans-serif; 
+  height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+.header {
+  position: fixed; top: 0; left: 0; right: 0; height: 70px;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 32px; z-index: 1000;
+  background: linear-gradient(to bottom, rgba(10,12,18,0.8), transparent);
+  backdrop-filter: blur(8px);
+}
+.back-btn {
+  display: flex; align-items: center; gap: 8px; color: #8892A4; text-decoration: none; 
+  font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; transition: color 0.2s;
+}
+.back-btn:hover { color: #F0F2F5; }
+.back-btn svg { width: 16px; height: 16px; }
+
+.header-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+.score-badge {
+  background: rgba(20,184,166,0.1); border: 1px solid rgba(20,184,166,0.25);
+  padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; color: #14B8A6;
+  display: flex; align-items: center; gap: 6px;
+}
+
+
+.main-area {
+  display: grid; grid-template-columns: 280px 1fr 340px; flex: 1; height: 100vh; padding-top: 70px;
+}
+
+
+.left-panel {
+  border-right: 1px solid rgba(59,130,246,0.1); background: #0D1118; padding: 28px 20px;
+  display: flex; flex-direction: column; gap: 20px; overflow-y: auto;
+}
+.left-panel::-webkit-scrollbar { width: 4px; }
+.left-panel::-webkit-scrollbar-thumb { background: #1E2535; border-radius: 2px; }
+
+.nav-group-title { font-size: 10px; font-weight: 700; color: #4B5563; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px; }
+
+.streak-card {
+  background: linear-gradient(135deg, #1A1208, #111824); border: 1px solid #F59E0B40;
+  padding: 16px; border-radius: 14px; text-align: center;
+}
+.streak-card .val { font-size: 38px; font-weight: 800; color: #F59E0B; line-height: 1; margin-bottom: 4px; }
+.streak-card .lbl { font-size: 12px; font-weight: 600; color: #F59E0B90; text-transform: uppercase; letter-spacing: 0.1em; }
+
+.dt-card { background: #111824; border: 1px solid rgba(59,130,246,0.1); border-radius: 14px; padding: 16px; }
+
+.filter-btn {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; border: none; background: transparent;
+  padding: 12px 14px; border-radius: 10px; cursor: pointer; color: #8892A4; transition: all 0.2s;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; margin-bottom:6px;
+}
+.filter-btn:hover { background: rgba(255,255,255,0.03); }
+.filter-btn.active { background: rgba(20,184,166,0.1); color: #14B8A6; }
+
+
+.center-panel {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px;
+  background: radial-gradient(circle at 50% 50%, rgba(20,184,166,0.04) 0%, transparent 70%);
+}
+
+#heatmap-wrap {
+  width: 100%; max-width: 900px; padding: 30px; background: #0A0C12; border: 1px solid #1E2D44; border-radius: 20px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.5); position: relative; transition: opacity 0.4s; overflow:hidden;
+}
+
+#month-row { display: flex; gap: 0; padding-left: 30px; position: relative; height: 18px; margin-bottom:8px; }
+.month-lbl { position: absolute; font-size: 11px; color: #4B5563; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+
+#grid-row { display: flex; align-items: flex-start; }
+#day-labels { display: flex; flex-direction: column; gap: 5px; margin-right: 12px; padding-top: 3px; font-size: 10px; font-weight: 600; color: #4B5563; }
+.day-lbl { height: 14px; line-height: 14px; text-align: right; }
+
+#heat-grid { display: flex; gap: 5px; flex: 1; }
+.week-col { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+.hcell {
+  aspect-ratio: 1; border-radius: 4px; cursor: pointer; position: relative;
+  transition: transform 0.15s, outline 0.15s, filter 0.15s; outline: 2px solid transparent; outline-offset: 2px;
+}
+.hcell:hover { transform: scale(1.4); z-index: 10; outline-color: rgba(255,255,255,0.3); filter: brightness(1.2); }
+.hcell.active-cell { transform: scale(1.2); z-index: 5; outline-color: #14B8A6; }
+
+#legend { display: flex; align-items: center; justify-content: flex-end; margin-top: 24px; gap: 6px; }
+.leg-step { width: 14px; height: 14px; border-radius: 4px; }
+.leg-txt { font-size: 11px; color: #4B5563; font-weight: 600; margin: 0 4px; }
+
+
+.right-panel {
+  border-left: 1px solid rgba(59,130,246,0.1); background: #0D1118; padding: 28px 24px;
+  overflow-y: auto; display: flex; flex-direction: column; gap: 24px;
+}
+
+#unselected-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: #4B5563;
+}
+
+#detail-container { display: none; flex-direction: column; gap: 24px; animation: slideInFade 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+@keyframes slideInFade { from{ opacity:0; transform:translateX(20px); } to{ opacity:1; transform:translateX(0); } }
+
+.dt-pretitle { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; color: #14B8A6;}
+.dt-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #F0F2F5; margin-bottom: 24px;}
+
+.score-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px;}
+.score-val { font-size: 48px; font-weight: 700; color: #F0F2F5; line-height: 1;}
+
+.st-row { display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed #1E2D44; padding-bottom:12px;}
+.st-row:last-child { border:none; margin:0; padding:0;}
+
+.btn {
+  padding: 12px 16px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 14px; width:100%;
+  font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; display: flex; align-items: center; justify-content:center; gap: 8px; margin-bottom:12px;
+}
+.btn-primary { background: #14B8A6; color: #0A0C12; }
+.btn-primary:hover { background: #0D9488; }
+
+.dt-card-lbl { font-size: 11px; font-weight: 700; color: #8892A4; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
