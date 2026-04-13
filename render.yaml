@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: study-backend
+    env: python
+    rootDir: Topic_scoring/study_backend
+    buildCommand: "./render-build.sh"
+    startCommand: "gunicorn study_backend.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "study-backend.onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: study-db
+          property: connectionString
+
+  - type: web
+    name: study-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: ""
+
+databases:
+  - name: study-db
+    databaseName: study_db
+    user: study_user
+    plan: free
