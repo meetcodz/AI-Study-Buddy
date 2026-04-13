@@ -40,6 +40,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'http://localhost:3000',
+    'https://study-frontend-k8az.onrender.com',
 ]
 CORS_ALLOW_HEADERS = [
     'accept',
