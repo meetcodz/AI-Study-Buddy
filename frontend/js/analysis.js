@@ -1,4 +1,4 @@
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = 'https://study-backend-k8az.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
     const subjectsContainer = document.getElementById('subjects-nav');

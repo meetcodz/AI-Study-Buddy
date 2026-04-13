@@ -263,7 +263,7 @@ async function init() {
   renderFilters(); // Initial render
 
   try {
-    const res = await fetch('http://localhost:8000/api/questions/bank/');
+    const res = await fetch('https://study-backend-k8az.onrender.com/api/questions/bank/');
     if (!res.ok) throw new Error('Network error');
     
     const data = await res.json();
