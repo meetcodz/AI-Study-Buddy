@@ -8,7 +8,7 @@ services:
     startCommand: "gunicorn study_backend.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0
+        value: 3.12.0
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
