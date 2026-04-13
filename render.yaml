@@ -1,6 +1,7 @@
 services:
   - type: web
     name: study-backend
+    plan: free
     env: python
     rootDir: Topic_scoring/study_backend
     buildCommand: "./render-build.sh"
