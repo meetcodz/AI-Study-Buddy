@@ -1,4 +1,4 @@
-asgiref==3.8.1
+asgiref>=3.9.1
 certifi==2025.1.31
 charset-normalizer==3.4.1
 dj-database-url==2.3.0
