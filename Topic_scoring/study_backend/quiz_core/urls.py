@@ -17,6 +17,7 @@ from .views import (
     BookmarkListView,
     UserProfileView,
     QuizSessionStartView,
+    QuizSessionCompleteView,
     UploadPDFView,
     TopicEvaluateView,
 )
@@ -32,6 +33,9 @@ urlpatterns = [
 
     # POST /api/sessions/start/ → Create a new quiz session
     path('sessions/start/', QuizSessionStartView.as_view(), name='session_start'),
+    
+    # POST /api/sessions/<id>/complete/ → Complete a quiz session and trigger AI Eval
+    path('sessions/<int:pk>/complete/', csrf_exempt(QuizSessionCompleteView.as_view()), name='session_complete'),
 
     # POST /api/submit/      → Submit an answer, store attempt, return result
     path('submit/', csrf_exempt(SubmitAnswerView.as_view()), name='submit'),

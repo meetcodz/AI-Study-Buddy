@@ -102,6 +102,7 @@ def compute_analysis(user) -> dict:
             'mastery_score': topic.mastery_score,
             'status': topic.status,
             'ai_feedback': topic.ai_feedback or "No AI evaluation yet.",
+            'recommended_subtopics': topic.recommended_subtopics,
             'attempts': attempts_data,
         })
 
@@ -110,6 +111,31 @@ def compute_analysis(user) -> dict:
             weak_topics.append(topic.name)
         elif t_accuracy > STRONG_TOPIC_THRESHOLD:
             strong_topics.append(topic.name)
+
+    # ── Aggregate per-session stats (Quiz-as-a-Topic) ───────────────────────────
+    from .models import QuizSession
+    sessions = QuizSession.objects.filter(user=user, completed_at__isnull=False).order_by('-completed_at')[:10]
+    session_performance = []
+    
+    for s in sessions:
+        s_attempts = s.attempts.all()
+        s_total = s_attempts.count()
+        s_correct = s_attempts.filter(is_correct=True).count()
+        s_accuracy = round((s_correct / s_total) * 100, 2) if s_total > 0 else 0
+        
+        session_performance.append({
+            'id': s.id,
+            'topic_name': s.topic_name or f"Quiz {s.id}",
+            'quiz_length': s.quiz_length,
+            'started_at': s.started_at.isoformat(),
+            'completed_at': s.completed_at.isoformat(),
+            'mastery_score': s.mastery_score,
+            'status': s.status,
+            'ai_feedback': s.ai_feedback or "No session AI feedback yet.",
+            'recommended_subtopics': s.recommended_subtopics,
+            'accuracy': s.accuracy if hasattr(s, 'accuracy') else s_accuracy,
+            'total_correct': s_correct
+        })
 
     # Sort topic list by accuracy ascending (weakest first)
     topic_performance.sort(key=lambda x: x['accuracy'])
@@ -123,6 +149,7 @@ def compute_analysis(user) -> dict:
         'overall_accuracy': overall_accuracy,
         'avg_time_per_question': avg_time,
         'topic_performance': topic_performance,
+        'session_performance': session_performance,
         'weak_topics': weak_topics,
         'strong_topics': strong_topics,
     }

@@ -14,6 +14,7 @@ import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 # Load environment variables from .env file
 load_dotenv()
@@ -21,21 +22,18 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Add questionss project dir to sys.path
-EXTERNAL_APP_DIR = BASE_DIR.parent.parent / 'questionss' / 'questionss'
-sys.path.insert(0, str(EXTERNAL_APP_DIR))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2sy+ymn^&xmeln_paxndx4eb@0va(q!*#561m42gn#+-le4_s&'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-2sy+ymn^&xmeln_paxndx4eb@0va(q!*#561m42gn#+-le4_s&')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
@@ -59,7 +57,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:5173',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
-]
+] + os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
 
 
 # Application definition
@@ -77,11 +75,13 @@ INSTALLED_APPS = [
     'quiz_api',
     'chat_api',
     'quiz_core',
+    'whitenoise.runserver_nostatic',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',   # ← MUST be first
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # ← For static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -95,7 +95,7 @@ ROOT_URLCONF = 'study_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [EXTERNAL_APP_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates_external'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -114,14 +114,10 @@ WSGI_APPLICATION = 'study_backend.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Topic_score_db', # Put your pgAdmin DB name here
-        'USER': 'postgres',
-        'PASSWORD': 'Modimeet@123', # Put your pgAdmin password here
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default='postgres://postgres:Modimeet@123@127.0.0.1:5432/Topic_score_db',
+        conn_max_age=600
+    )
 }
 
 
@@ -160,9 +156,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    EXTERNAL_APP_DIR / 'static',
+    BASE_DIR / 'static_external',
 ]
+
+# Enable WhiteNoise compression and caching support
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Media files (audio uploads, solution images, etc.)
 MEDIA_URL = '/media/'

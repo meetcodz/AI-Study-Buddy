@@ -59,9 +59,6 @@ class QuestionListView(APIView):
 
         qs = Question.objects.select_related('topic').all()
 
-        if topic:
-            qs = qs.filter(topic__name__iexact=topic)  # ForeignKey lookup
-
         if difficulty:
             if difficulty not in ('easy', 'medium', 'hard'):
                 return Response(
@@ -70,13 +67,32 @@ class QuestionListView(APIView):
                 )
             qs = qs.filter(difficulty=difficulty)
 
-        if not qs.exists():
+        questions = []
+        
+        if topic:
+            # Prioritize the most recently generated questions for this topic
+            topic_qs = qs.filter(topic__name__iexact=topic).order_by('-created_at')
+            topic_list = list(topic_qs[:limit])
+            
+            import random
+            random.shuffle(topic_list)
+            
+            questions.extend(topic_list)
+            
+            if len(questions) < limit:
+                remaining = limit - len(questions)
+                rest_qs = qs.exclude(topic__name__iexact=topic).order_by('?')
+                rest_list = list(rest_qs[:remaining])
+                questions.extend(rest_list)
+        else:
+            questions = list(qs.order_by('?')[:limit])
+
+        if not questions:
             return Response(
                 {'message': 'No questions found matching the given filters.', 'questions': []},
                 status=status.HTTP_200_OK,
             )
 
-        questions = qs.order_by('?')[:limit]
         serializer = QuestionSerializer(questions, many=True)
         return Response({
             'count': len(serializer.data),
@@ -143,13 +159,55 @@ class QuizSessionStartView(APIView):
 
         session = QuizSession.objects.create(
             user=user,
-            quiz_length=serializer.validated_data['quiz_length']
+            quiz_length=serializer.validated_data['quiz_length'],
+            topic_name=serializer.validated_data.get('topic_name')
         )
 
         return Response(
             {'session_id': session.id, 'quiz_length': session.quiz_length},
             status=status.HTTP_201_CREATED
         )
+
+
+# ─── POST /api/sessions/<id>/complete/ ──────────────────────────────────────
+
+class QuizSessionCompleteView(APIView):
+    """
+    Marks a session as complete and triggers the AI evaluation for all topics
+    that the user encountered during this session.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request, pk):
+        from django.utils import timezone
+        import threading
+        
+        session = get_object_or_404(QuizSession, pk=pk)
+        
+        if not session.completed_at:
+            session.completed_at = timezone.now()
+            session.save()
+            
+        # 1. Evaluate individual topics (Global Aggregate)
+        attempts = session.attempts.select_related('question__topic').all()
+        topics = set(a.question.topic for a in attempts if a.question.topic)
+        
+        for topic in topics:
+            evaluate_topic_mastery(session.user, topic)
+            
+        # 2. Evaluate the specific Session (Per-Quiz Analytics)
+        try:
+            from .ai_scoring_service import evaluate_session_mastery
+            session_eval = evaluate_session_mastery(session)
+        except Exception as e:
+            logger.error(f"Session evaluation failed: {e}")
+            session_eval = {"error": str(e)}
+                
+        return Response({
+            'message': 'Quiz completed and AI processing finished.',
+            'session_id': session.id,
+            'evaluation': session_eval
+        }, status=status.HTTP_200_OK)
 
 
 # ─── POST /api/submit/ ────────────────────────────────────────────────────────

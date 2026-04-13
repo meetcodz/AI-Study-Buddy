@@ -86,6 +86,12 @@ class QuizSessionStartSerializer(serializers.Serializer):
         min_value=1,
         help_text="Expected number of questions for this session."
     )
+    topic_name = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=255,
+        help_text="Optional custom name for this quiz session."
+    )
 
 
 # ─── Submit Answer ────────────────────────────────────────────────────────────
@@ -239,6 +245,21 @@ class TopicPerformanceSerializer(serializers.Serializer):
     attempts = TopicAttemptSerializer(many=True)
 
 
+class SessionPerformanceSerializer(serializers.Serializer):
+    """Individual quiz session results."""
+    session_id = serializers.IntegerField(source='id')
+    topic_name = serializers.CharField()
+    quiz_length = serializers.IntegerField()
+    started_at = serializers.DateTimeField()
+    completed_at = serializers.DateTimeField()
+    mastery_score = serializers.IntegerField()
+    status = serializers.CharField()
+    ai_feedback = serializers.CharField()
+    recommended_subtopics = serializers.ListField(child=serializers.CharField())
+    accuracy = serializers.FloatField()
+    total_correct = serializers.IntegerField()
+
+
 class AnalysisResponseSerializer(serializers.Serializer):
     """Shape of the full response from GET /api/analysis/."""
 
@@ -247,5 +268,6 @@ class AnalysisResponseSerializer(serializers.Serializer):
     overall_accuracy = serializers.FloatField()
     avg_time_per_question = serializers.FloatField()
     topic_performance = TopicPerformanceSerializer(many=True)
+    session_performance = SessionPerformanceSerializer(many=True, required=False)
     weak_topics = serializers.ListField(child=serializers.CharField())
     strong_topics = serializers.ListField(child=serializers.CharField())

@@ -2,10 +2,10 @@ import os
 import json
 import logging
 import textwrap
-from openai import OpenAI
-from django.conf import settings
 from .models import Topic, Attempt
+from django.conf import settings
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +16,11 @@ Below are the recent question attempts by the student in this topic:
 {attempts_text}
 
 Based on their performance, evaluate the student's topic mastery.
-You must return a JSON response with exactly three fields:
+You must return a JSON response with exactly four fields:
 1. "mastery_score": An integer from 0 to 100.
 2. "status": One of ["Weak", "Average", "Strong"].
 3. "ai_feedback": A short, constructive paragraph explaining why they received this score and what they should focus on.
+4. "recommended_subtopics": A list of 1 to 3 specific sub-topics or concepts they should study next based on their mistakes. (Format: ["DNA replication", "Transcription"]).
 
 IMPORTANT: Return ONLY valid JSON, do not include markdown or external text.
 """)
@@ -32,16 +33,16 @@ def evaluate_topic_mastery(user, topic):
     """
     load_dotenv(settings.BASE_DIR / '.env')
     
-    api_key = os.environ.get("OPENROUTER_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        logger.error("OPENROUTER_API_KEY not set!")
-        raise ValueError("OPENROUTER_API_KEY is not set.")
+        logger.error("GEMINI_API_KEY not set!")
+        raise ValueError("GEMINI_API_KEY is not set.")
     
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key,
-    )
-    model_name = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    if model_name and not model_name.startswith("models/"):
+        model_name = f"models/{model_name}"
+        
+    genai.configure(api_key=api_key)
     
     attempts = Attempt.objects.filter(user=user, question__topic=topic).select_related('question').order_by('-created_at')[:20]
     
@@ -58,11 +59,9 @@ def evaluate_topic_mastery(user, topic):
     prompt = SCORING_PROMPT.format(topic_name=topic.name, attempts_text=attempts_text)
     
     try:
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        raw_text = response.choices[0].message.content
+        model = genai.GenerativeModel(model_name)
+        response = model.generate_content(prompt)
+        raw_text = response.text
         
         # Clean JSON
         import re
@@ -84,6 +83,10 @@ def evaluate_topic_mastery(user, topic):
         topic.status = status_val
         topic.ai_feedback = data.get("ai_feedback", "")
         
+        recs = data.get("recommended_subtopics", [])
+        if isinstance(recs, list):
+            topic.recommended_subtopics = recs
+            
         from django.utils import timezone
         topic.last_evaluated = timezone.now()
         topic.save()
@@ -99,4 +102,57 @@ def evaluate_topic_mastery(user, topic):
         
     except Exception as e:
         logger.error(f"Error evaluating topic mastery: {e}")
+        return None
+def evaluate_session_mastery(session):
+    """
+    Evaluates a user's performance for a single specific quiz session.
+    Saves the feedback directly to the QuizSession model.
+    """
+    load_dotenv(settings.BASE_DIR / '.env')
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key: return None
+    
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    if model_name and not model_name.startswith("models/"):
+        model_name = f"models/{model_name}"
+        
+    genai.configure(api_key=api_key)
+    
+    attempts = Attempt.objects.filter(session=session).select_related('question').order_by('created_at')
+    if not attempts.exists(): return None
+    
+    attempts_text_list = []
+    for at in attempts:
+        q = at.question
+        status_text = "Correct" if at.is_correct else f"Incorrect (Chose '{at.selected_answer}', Correct was '{q.correct_answer}')"
+        attempts_text_list.append(f"Q: {q.text}\nResult: {status_text}\nTime: {at.time_taken}s")
+        
+    attempts_text = "\n\n".join(attempts_text_list)
+    topic_label = session.topic_name or "General Quiz"
+    prompt = SCORING_PROMPT.format(topic_name=topic_label, attempts_text=attempts_text)
+    
+    try:
+        model = genai.GenerativeModel(model_name)
+        response = model.generate_content(prompt)
+        raw_text = response.text
+        
+        import re
+        cleaned = re.sub(r'^```(?:json)?\s*', '', raw_text, flags=re.MULTILINE)
+        cleaned = re.sub(r'```\s*$', '', cleaned, flags=re.MULTILINE)
+        cleaned = cleaned.strip()
+        match = re.search(r'\{.*\}', cleaned, re.DOTALL)
+        if match: cleaned = match.group()
+            
+        data = json.loads(cleaned)
+        
+        session.mastery_score = int(data.get("mastery_score", 50))
+        session.status = data.get("status", "Average")
+        session.ai_feedback = data.get("ai_feedback", "")
+        recs = data.get("recommended_subtopics", [])
+        if isinstance(recs, list): session.recommended_subtopics = recs
+        
+        session.save()
+        return data
+    except Exception as e:
+        logger.error(f"Error evaluating session mastery: {e}")
         return None

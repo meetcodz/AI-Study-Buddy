@@ -188,7 +188,11 @@
         // Remove dot animation when response lands
         if (messagesDiv.contains(typingEl)) messagesDiv.removeChild(typingEl);
         
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.reply || `Server error ${res.status}`);
+        }
+        
         const data = await res.json();
         const replyText = data.reply || 'Sorry, I could not generate a response.';
 
@@ -200,7 +204,7 @@
       } catch (err) {
         if (messagesDiv.contains(typingEl)) messagesDiv.removeChild(typingEl);
         const { row, bubble } = createAIMessageBubble();
-        typeTextSequence(bubble, `Error: ${err.message}. Make sure backend is running.`, row);
+        typeTextSequence(bubble, `Error: ${err.message}`, row);
       }
     }
 

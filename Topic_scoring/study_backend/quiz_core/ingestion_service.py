@@ -17,7 +17,7 @@ import logging
 import time
 import sys
 
-from openai import OpenAI
+import google.generativeai as genai
 import pdfplumber
 
 from .models import Question
@@ -222,15 +222,13 @@ def process_pdf_and_save(
     from django.conf import settings
     load_dotenv(settings.BASE_DIR / '.env')
 
-    api_key = os.environ.get("OPENROUTER_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        raise ValueError("OPENROUTER_API_KEY is not set. Add it to your .env file.")
+        raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
 
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key,
-    )
-    model_name = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(model_name)
 
     # ── Resolve topic string → Topic model object ─────────────────────────
     from .models import Topic
@@ -257,13 +255,8 @@ def process_pdf_and_save(
             import sys
             sys.stdout.flush()
 
-            response = client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "user", "content": prompt}
-                ],
-            )
-            raw_text = response.choices[0].message.content
+            response = model.generate_content(prompt)
+            raw_text = response.text
 
             # ── Debug: show what the LLM returned ────────────────────────
             print(f"[CHUNK {i}] ✅ LLM responded ({len(raw_text)} chars)")

@@ -166,7 +166,7 @@ function renderQuizSetup() {
       startBtn.addEventListener('click', () => {
         if (selectedLength) {
           state.quizLength = selectedLength;
-          state.topic = null;
+          state.topic = uploadResult ? uploadResult.topic : null;
           state.view = 'quiz';
           renderApp();
         }
@@ -227,14 +227,8 @@ function renderQuizSetup() {
           const data = await res.json();
           uploadResult = data;
           uploadStatus = 'complete';
+          if (!selectedLength) selectedLength = 10; // Auto-select 10 questions as default
           renderSetupUI();
-          
-          setTimeout(() => {
-            state.quizLength = 10;
-            state.topic = data.topic;
-            state.view = 'quiz';
-            renderApp();
-          }, 2000);
         } catch (err) {
           uploadStatus = 'error';
           errorMsg = err.message || 'Something went wrong during generation.';
@@ -281,7 +275,10 @@ function renderActiveQuiz() {
       const resSession = await fetch(`${API_BASE}/api/sessions/start/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quiz_length: state.quizLength })
+        body: JSON.stringify({ 
+          quiz_length: state.quizLength,
+          topic_name: state.topic || 'General'
+        })
       });
       if (!resSession.ok) throw new Error(`Session error: ${resSession.status}`);
       const sessionData = await resSession.json();
@@ -395,6 +392,23 @@ function renderActiveQuiz() {
 
       if (timerInterval) clearInterval(timerInterval);
       state.results = finalResults;
+
+      // New: Trigger AI Session Completion & Evaluation
+      if (sessionId) {
+        try {
+          const resComp = await fetch(`${API_BASE}/api/sessions/${sessionId}/complete/`, {
+            method: 'POST'
+          });
+          if (resComp.ok) {
+            const compData = await resComp.json();
+            // Store evaluations for display if needed
+            state.evaluations = compData.evaluations;
+          }
+        } catch (e) {
+          console.error("AI Evaluation failed", e);
+        }
+      }
+
       state.view = 'results';
       renderApp();
 
@@ -650,6 +664,18 @@ function renderResultDashboard() {
   const weakTopics = topicPerformance.filter((t) => t.accuracy < 50).map((t) => t.topic);
   const strongTopics = topicPerformance.filter((t) => t.accuracy >= 75).map((t) => t.topic);
 
+  // Extract recommended subtopics from evaluations
+  const recommendedSubtopics = [];
+  if (state.evaluations) {
+    state.evaluations.forEach(ev => {
+      if (ev.recommended_subtopics) {
+        ev.recommended_subtopics.forEach(s => {
+          if (!recommendedSubtopics.includes(s)) recommendedSubtopics.push(s);
+        });
+      }
+    });
+  }
+
   const iconName = accuracy >= 80 ? 'trophy' : accuracy >= 50 ? 'trending-up' : 'book-open';
   const iconColor = accuracy >= 80 ? 'text-amber-400' : accuracy >= 50 ? 'text-blue-400' : 'text-text-muted';
   const gradeLabel = accuracy >= 80 ? 'Excellent' : accuracy >= 60 ? 'Good Job' : accuracy >= 40 ? 'Keep Practicing' : 'Needs Improvement';
@@ -725,6 +751,20 @@ function renderResultDashboard() {
                <ul class="space-y-2">${strongTopics.map(t => `<li class="flex items-center gap-2 text-sm text-text-secondary"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>${t}</li>`).join('') || '<p class="text-xs text-text-muted italic">Keep practicing!</p>'}</ul>
             </div>
           </div>
+
+          ${recommendedSubtopics.length > 0 ? `
+          <div class="glass-card p-6 border-accent/20 bg-accent-soft/30">
+            <h3 class="text-sm font-bold text-accent mb-4 flex items-center gap-2"><i data-lucide="sparkles" style="width: 18px; height: 18px;"></i> AI Recommended Focus Areas</h3>
+            <div class="flex flex-wrap gap-2">
+              ${recommendedSubtopics.map(s => `
+                <span class="px-3 py-1.5 rounded-full bg-surface-light border border-accent/20 text-accent text-xs font-semibold shadow-sm animate-pulse-slow">
+                  ${s}
+                </span>
+              `).join('')}
+            </div>
+            <p class="text-xs text-text-muted mt-4 italic">The AI Study Coach has identified these granular sub-topics based on your recent mistakes. Mastering these will significantly boost your core scores.</p>
+          </div>
+          ` : ''}
 
           <div class="glass-card p-6">
             <h2 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2"><i data-lucide="clipboard-list" style="width: 20px; height: 20px; color: var(--accent);"></i> Review Your Answers</h2>

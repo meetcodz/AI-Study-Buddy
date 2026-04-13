@@ -58,6 +58,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             analysisData = grouped;
+
+            // New: Handle Session Performance (Quiz-by-Quiz)
+            if (data.session_performance && data.session_performance.length > 0) {
+                analysisData['Quiz History'] = data.session_performance.map(sp => ({
+                    topic: sp.topic_name,
+                    mastery_score: sp.mastery_score,
+                    status: sp.status,
+                    ai_feedback: sp.ai_feedback,
+                    recommended_subtopics: sp.recommended_subtopics || [],
+                    total: sp.quiz_length,
+                    accuracy: sp.accuracy,
+                    avg_time: 0, // Session-level avg time not computed here yet
+                    isSession: true,
+                    date: new Date(sp.completed_at).toLocaleDateString()
+                }));
+            }
+
             const subjects = Object.keys(analysisData);
             if (subjects.length > 0) {
                 if (!currentSubject || !subjects.includes(currentSubject)) {
@@ -120,15 +137,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `).join('') : '<div style="grid-column: 1/-1; padding: 30px; text-align: center; color: #4B5563; font-size: 13px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.05);"><i data-lucide="info" style="width:16px; margin-bottom:8px; opacity:0.5;"></i><br>No recent question details available for this topic.</div>';
 
+            const isSession = tData.isSession;
+            const subtopicsHTML = (tData.recommended_subtopics && tData.recommended_subtopics.length > 0) ? `
+                <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    ${tData.recommended_subtopics.map(s => `<span style="font-size: 10px; padding: 4px 10px; border-radius: 100px; background: rgba(59, 130, 246, 0.1); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.2);">${s}</span>`).join('')}
+                </div>
+            ` : '';
+
             card.innerHTML = `
                 <div class="topic-header" onclick="this.parentElement.classList.toggle('open')">
                     <div class="topic-info-left">
-                        <div class="topic-title">${tData.topic}</div>
+                        <div class="topic-title">${tData.topic} ${isSession ? `<span style="font-size: 11px; opacity: 0.5; font-weight: normal; margin-left: 8px;">${tData.date}</span>` : ''}</div>
                         <div class="topic-meta">
-                            <span><i data-lucide="file-question" style="width:14px;"></i> ${tData.total} Qs</span>
-                            <span><i data-lucide="activity" style="width:14px;"></i> Mastery: ${tData.mastery_score}%</span>
+                            <span><i data-lucide="${isSession ? 'calendar' : 'file-question'}" style="width:14px;"></i> ${tData.total} ${isSession ? 'Questions' : 'Qs'}</span>
+                            <span><i data-lucide="activity" style="width:14px;"></i> ${isSession ? 'Session Accuracy' : 'Mastery'}: ${tData.accuracy}%</span>
                             <div class="mastery-progress-bg">
-                                <div class="mastery-progress-fill" style="width: ${tData.mastery_score}%"></div>
+                                <div class="mastery-progress-fill" style="width: ${tData.accuracy}%"></div>
                             </div>
                         </div>
                     </div>
@@ -138,15 +162,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="topic-content">
                     <div class="topic-content-inner">
-                        <div class="ai-feedback-module">
-                            <div class="ai-feedback-header">
-                                <i data-lucide="sparkles" style="width: 14px;"></i> AI Insights
+                        <div class="ai-feedback-module" style="background: rgba(20, 184, 166, 0.03); border-color: rgba(20, 184, 166, 0.1);">
+                            <div class="ai-feedback-header" style="color: #14B8A6;">
+                                <i data-lucide="sparkles" style="width: 14px;"></i> ${isSession ? 'Quiz Performance Insights' : 'AI Insights'}
                             </div>
                             <div class="ai-feedback-text">${tData.ai_feedback}</div>
+                            ${subtopicsHTML}
                         </div>
+                        ${!isSession ? `
                         <div class="questions-grid">
                             ${questionsHTML}
                         </div>
+                        ` : `
+                        <div style="padding: 20px; text-align: center; color: #8892A4; font-size: 13px;">
+                            Detailed session breakdown is coming soon. Click to review this quiz in your history.
+                        </div>
+                        `}
                     </div>
                 </div>
             `;

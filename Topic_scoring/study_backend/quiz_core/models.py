@@ -61,6 +61,11 @@ class Topic(models.Model):
         default='Average'
     )
     last_evaluated = models.DateTimeField(null=True, blank=True)
+    recommended_subtopics = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of precise sub-topics generated dynamically by the AI for focused study."
+    )
     ai_feedback = models.TextField(
         blank=True,
         null=True,
@@ -206,6 +211,12 @@ class QuizSession(models.Model):
     quiz_length = models.PositiveIntegerField(
         help_text="Expected number of questions for this session."
     )
+    topic_name = models.CharField(max_length=255, blank=True, null=True, help_text="Custom name for this quiz session.")
+    mastery_score = models.IntegerField(default=0)
+    status = models.CharField(max_length=20, default='Average')
+    ai_feedback = models.TextField(blank=True, null=True)
+    recommended_subtopics = models.JSONField(default=list, blank=True)
+    
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 

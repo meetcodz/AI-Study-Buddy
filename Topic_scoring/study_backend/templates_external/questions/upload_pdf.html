@@ -1,0 +1,85 @@
+{% extends "questions/base.html" %}
+{% block title %}Upload PDF — Midnight QA{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-text">
+    <h2 class="page-title">Generate Questions from PDF</h2>
+    <p class="page-sub">Upload a document and let Gemini AI create a test for you.</p>
+  </div>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 40px auto; padding: 40px;">
+  <form id="upload-form">
+    <div style="margin-bottom: 24px;">
+      <label style="display: block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; color: var(--ghost);">Topic / Subject Name</label>
+      <input type="text" id="topic" name="topic" required placeholder="e.g. History 101, Computer Science" 
+             style="width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fog); font-family: 'Outfit', sans-serif; outline: none; transition: 0.3s;">
+    </div>
+
+    <div style="margin-bottom: 32px;">
+      <label style="display: block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; color: var(--ghost);">PDF Document</label>
+      <input type="file" id="pdf_file" name="pdf_file" accept="application/pdf" required
+             style="width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px dashed var(--border); border-radius: var(--radius-sm); color: var(--fog); font-family: 'Outfit', sans-serif; outline: none; transition: 0.3s; cursor: pointer;">
+    </div>
+
+    <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%; justify-content: center; height: 50px;">
+      Generate Quiz Magic
+    </button>
+  </form>
+
+  <div id="status-msg" style="margin-top: 24px; padding: 16px; border-radius: 8px; font-size: 0.9rem; display: none;"></div>
+</div>
+
+<script>
+  const form = document.getElementById('upload-form');
+  const btn = document.getElementById('submit-btn');
+  const statusMsg = document.getElementById('status-msg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(form);
+    
+    btn.disabled = true;
+    btn.innerHTML = '⚙️ AI is reading... This takes a moment.';
+    
+    statusMsg.style.display = 'block';
+    statusMsg.style.background = 'rgba(59, 130, 246, 0.1)';
+    statusMsg.style.color = 'var(--accent)';
+    statusMsg.style.border = '1px solid var(--accent-glow)';
+    statusMsg.innerText = 'Extracting AI questions from PDF... Please wait.';
+
+    try {
+      const response = await fetch('/api/upload-pdf/', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+
+      if (response.ok) {
+        statusMsg.style.background = 'rgba(16, 185, 129, 0.1)';
+        statusMsg.style.color = '#10B981';
+        statusMsg.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+        statusMsg.innerHTML = `<strong>Success!</strong> ${result.questions_added} questions generated.<br><br>Redirecting...`;
+        
+        // Wait 2 seconds and redirect to the question list
+        setTimeout(() => {
+          window.location.href = '/ui/questions/';
+        }, 2000);
+      } else {
+        throw new Error(result.error || 'Failed to process PDF.');
+      }
+    } catch (err) {
+      statusMsg.style.background = 'rgba(239, 68, 68, 0.1)';
+      statusMsg.style.color = '#EF4444';
+      statusMsg.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+      statusMsg.innerHTML = `<strong>Error:</strong> ${err.message}`;
+      
+      btn.disabled = false;
+      btn.innerHTML = 'Try Again';
+    }
+  });
+</script>
+{% endblock %}
